@@ -7,17 +7,17 @@ import qrcode
 import io
 
 # --- 1) Carica secrets ---
-token     = st.secrets["github_token"]
+token = st.secrets["github_token"]
 repo_name = st.secrets["repo_name"]
-app_url   = st.secrets["app_url"]  # es. "https://…streamlit.app"
+app_url = st.secrets["app_url"]  # es. "https://…streamlit.app"
 
 # --- 2) Inizializza GitHub ---
-g     = Github(token)
-repo  = g.get_repo(repo_name)
+g = Github(token)
+repo = g.get_repo(repo_name)
 fpath = "responses.json"
 
 # --- 3) Leggi query params ---
-params     = st.query_params
+params = st.query_params
 admin_mode = params.get("admin", ["0"])[0] == "1"
 survey_mode = params.get("survey", ["0"])[0] == "1"
 
@@ -28,62 +28,65 @@ if not admin_mode and not survey_mode:
     buf = io.BytesIO()
     qr.save(buf, format="PNG")
     buf.seek(0)
-    st.image(buf,
-             caption="Scansiona per aprire il questionario",
-             use_container_width=True)
+    st.image(
+        buf,
+        caption="Scansiona per aprire il questionario",
+        use_container_width=True
+    )
     st.markdown(f"[Oppure clicca qui per aprire il form]({app_url}?survey=1)")
-
     st.info("Quando gli utenti scannerizzano il QR o cliccano, vedranno solo il form.")
-
-    st.stop()  # non esegue nulla di più
+    st.stop()
 
 # --- 5) SURVEY PAGE (solo form) ---
 if survey_mode and not admin_mode:
     st.title("Questionario")
-
     with st.form("survey"):
         q1 = st.text_input("1) Dove lavori?")
-        q2 = st.radio("2) Seleziona la tua opzione:",
-                      options=["Opzione A", "Opzione B", "Opzione C", "Opzione D"])
+        q2 = st.radio(
+            "2) Seleziona la tua opzione:",
+            options=["Opzione A", "Opzione B", "Opzione C", "Opzione D"]
+        )
         submitted = st.form_submit_button("Invia")
-
     if submitted:
         try:
             contents = repo.get_contents(fpath)
-            data     = json.loads(contents.decoded_content)
+            data = json.loads(contents.decoded_content)
         except:
             data = []
-
         data.append({"q1": q1, "q2": q2})
         updated = json.dumps(data, ensure_ascii=False, indent=2)
-
         if "contents" in locals():
             repo.update_file(fpath, "Aggiorna survey", updated, contents.sha)
         else:
             repo.create_file(fpath, "Crea responses.json", updated)
-
         st.success("Grazie! La tua risposta è stata registrata.")
-
-    st.stop()  # blocca qui
+    st.stop()
 
 # --- 6) ADMIN PAGE (dashboard) ---
-st.title("Dashboard Risposte (Admin)")
+st.title("Dashboard Risposte")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
 try:
     contents = repo.get_contents(fpath)
-    data     = json.loads(contents.decoded_content)
+    data = json.loads(contents.decoded_content)
 except:
     st.info("Ancora nessuna risposta.")
     st.stop()
 
-# 6a) Risposte aperte Q1
-open_resps = [r["q1"] for r in data if r.get("q1","").strip()]
+# 6a) Risposte aperte Q1 come grafico a barre
+open_resps = [r["q1"] for r in data if r.get("q1", "").strip()]
 if open_resps:
-    st.subheader("Risposte aperte: Dove lavori?")
-    for txt in open_resps:
-        st.write(f"- {txt}")
+    freqs_open = {}
+    for resp in open_resps:
+        freqs_open[resp] = freqs_open.get(resp, 0) + 1
+    fig1, ax1 = plt.subplots(figsize=(6, 3))
+    ax1.bar(list(freqs_open.keys()), list(freqs_open.values()))
+    ax1.set_xticklabels(list(freqs_open.keys()), rotation=45, ha="right")
+    ax1.set_ylabel("Numero di risposte")
+    ax1.set_title("Dove lavori?")
+    st.subheader("Distribuzione delle risposte aperte")
+    st.pyplot(fig1)
 else:
     st.info("Nessuna risposta aperta per Q1.")
 
