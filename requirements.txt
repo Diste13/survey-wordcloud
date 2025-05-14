@@ -4,3 +4,4 @@ matplotlib
 qrcode
 pillow
 PyGithub
+plotly

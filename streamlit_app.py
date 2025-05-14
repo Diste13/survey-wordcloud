@@ -1,10 +1,10 @@
 import streamlit as st
 from github import Github
 import json
-from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import qrcode
 import io
+import plotly.express as px
 
 # --- 1) Carica secrets ---
 token = st.secrets["github_token"]
@@ -74,19 +74,20 @@ except:
     st.info("Ancora nessuna risposta.")
     st.stop()
 
-# 6a) Risposte aperte Q1 come grafico a barre
-open_resps = [r["q1"] for r in data if r.get("q1", "").strip()]
+# 6a) Risposte aperte Q1 come barplot con Plotly
+open_resps = [r.get("q1", "").strip() for r in data if r.get("q1", "").strip()]
 if open_resps:
     freqs_open = {}
     for resp in open_resps:
         freqs_open[resp] = freqs_open.get(resp, 0) + 1
-    fig1, ax1 = plt.subplots(figsize=(6, 3))
-    ax1.bar(list(freqs_open.keys()), list(freqs_open.values()))
-    ax1.set_xticklabels(list(freqs_open.keys()), rotation=45, ha="right")
-    ax1.set_ylabel("Numero di risposte")
-    ax1.set_title("Dove lavori?")
+    fig1 = px.bar(
+        x=list(freqs_open.keys()),
+        y=list(freqs_open.values()),
+        labels={"x": "Dove lavori?", "y": "Numero di risposte"}
+    )
+    fig1.update_layout(xaxis_tickangle=45, title=None)
     st.subheader("Distribuzione delle risposte aperte")
-    st.pyplot(fig1)
+    st.plotly_chart(fig1, use_container_width=True)
 else:
     st.info("Nessuna risposta aperta per Q1.")
 
