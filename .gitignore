@@ -1,0 +1,7 @@
+# Ignora il file che contiene il tuo GitHub token
+.streamlit/secrets.toml
+
+# (Opzionale) Cartelle / file di log o di ambiente virtuale
+venv/
+__pycache__/
+*.pyc
