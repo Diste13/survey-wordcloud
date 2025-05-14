@@ -146,3 +146,7 @@ if freqs:
     st.pyplot(fig, use_container_width=True)
 else:
     st.info("Nessuna risposta per la word-cloud.")
+
+# Domanda 1) è stato nominato l'esponente responsabile antiric? risposta: sn -> istogramma
+# Domanda 2) Chi avete nominato? risposta : amm del, membro del consiglio di amministrazione non esecutivo,altro -> istogramma
+# Domanda 3) Con riferimento ai punti sottostanti quali ritieni che possano essere pi impattanti sull'operatività dell'intermediario?  risposte:Governance dei gruppi, controllo costante, adeguata verifica, nuovi schemi di segnalazione alla uif, altr (max tre) -> wordcloud
