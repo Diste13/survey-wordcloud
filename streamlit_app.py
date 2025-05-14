@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import qrcode
 import io
 import plotly.express as px
+from wordcloud import WordCloud
+import random
 
 # --- 1) Carica secrets ---
 token = st.secrets["github_token"]
@@ -85,7 +87,11 @@ if open_resps:
         y=list(freqs_open.values()),
         labels={"x": "Dove lavori?", "y": "Numero di risposte"}
     )
-    fig1.update_layout(xaxis_tickangle=45, title=None)
+    fig1.update_layout(
+        xaxis_tickangle=45,
+        title_text='',
+        margin=dict(t=20)
+    )
     st.subheader("Distribuzione delle risposte aperte")
     st.plotly_chart(fig1, use_container_width=True)
 else:
@@ -93,14 +99,32 @@ else:
 
 st.write("---")
 
-# 6b) Word-cloud per Q2
+# 6b) Word-cloud per Q2 con palette personalizzata
+palette = [
+    "#00338D",  # KPMG blue
+    "#1E49E2",  # Cobalt Blue
+    "#0C233C",  # Spectrum Blue
+    "#ACEAFF",  # Light Blue
+    "#00B8F5",  # Pacific Blue
+    "#7210EA",  # Purple
+    "#FD349C"   # Pink
+]
+
+def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
+    return random.choice(palette)
+
 freqs = {}
 for r in data:
     freqs[r["q2"]] = freqs.get(r["q2"], 0) + 1
 
 if freqs:
-    wc = WordCloud(width=400, height=200).generate_from_frequencies(freqs)
-    fig, ax = plt.subplots(figsize=(6,3))
+    wc = WordCloud(
+        width=800,
+        height=400,
+        background_color='white',
+        color_func=random_color
+    ).generate_from_frequencies(freqs)
+    fig, ax = plt.subplots(figsize=(8,4), dpi=200)
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
     st.subheader("Distribuzione delle risposte (Q2)")
