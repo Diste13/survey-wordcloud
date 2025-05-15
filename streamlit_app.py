@@ -64,7 +64,6 @@ if logo_b64:
     top_html = f"""
 <div class="top_bar">
   <img src="data:image/png;base64,{logo_b64}" alt="Logo" />
-  <h1 style="color: white; margin-left: 20px; font-size: 24px;">Dashboard Risposte</h1>
 </div>
 """
     st.markdown(top_html, unsafe_allow_html=True)
