@@ -1,13 +1,15 @@
 import streamlit as st
 from github import Github, GithubException
 import json
-import matplotlib.pyplot as plt
-import plotly.express as px
-from uuid import uuid4
+import random
 from datetime import datetime
 import qrcode
 import io
-import random
+import base64
+from PIL import Image
+import matplotlib.pyplot as plt
+import plotly.express as px
+from uuid import uuid4
 from wordcloud import WordCloud
 import time
 
@@ -21,8 +23,7 @@ g    = Github(token)
 repo = g.get_repo(repo_name)
 
 # --- Helper: create_file con retry per evitare conflitti 409/422 ---
-def create_file_with_retry(repo, path, message, content,
-                           max_tries=3, backoff=0.5):
+def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.5):
     for attempt in range(1, max_tries+1):
         try:
             return repo.create_file(path, message, content)
@@ -45,11 +46,9 @@ if not admin_mode and not survey_mode:
     buf = io.BytesIO()
     qr.save(buf, format="PNG")
     buf.seek(0)
-    st.image(buf,
-             caption="Scansiona per aprire il questionario",
-             use_container_width=True)
+    st.image(buf, caption="Scansiona per aprire il questionario", use_container_width=True)
     st.markdown(f"[Oppure clicca qui per il form]({app_url}?survey=1)")
-    st.info("Scannerizza o clicca: vedranno solo il form.")
+    st.info("Scannerizza o clicca.")
     st.stop()
 
 # --- 5) SURVEY PAGE (solo form) ---
@@ -101,11 +100,45 @@ if survey_mode and not admin_mode:
     st.stop()
 
 # --- 6) ADMIN DASHBOARD ---
-st.title("Dashboard Risposte")
+# Banner personalizzato in alto
+# Carica l'immagine dal repo assets/
+img = Image.open("assets/immagine.png")
+buffered = io.BytesIO()
+img.save(buffered, format="PNG")
+img_b64 = base64.b64encode(buffered.getvalue()).decode()
+
+st.markdown(
+    f"""
+    <style>
+      .custom-banner {{
+        background-color: #00338D;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+      }}
+      .custom-banner img {{
+        height: 50px;
+        margin-right: 15px;
+      }}
+      .custom-banner h1 {{
+        color: white;
+        font-size: 28px;
+        margin: 0;
+      }}
+    </style>
+    <div class="custom-banner">
+      <img src="data:image/png;base64,{img_b64}" />
+      <h1>Dashboard Risposte</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Layout dashboard
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
-# Carica tutti i file JSON in responses/
+# Carica tutte le risposte
 try:
     files = repo.get_contents("responses")
     data  = [json.loads(repo.get_contents(f.path).decoded_content) for f in files]
@@ -118,6 +151,7 @@ palette = [
     "#00338D", "#1E49E2", "#0C233C",
     "#ACEAFF", "#00B8F5", "#7210EA", "#FD349C"
 ]
+
 def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
     return random.choice(palette)
 
