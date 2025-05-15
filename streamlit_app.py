@@ -13,39 +13,53 @@ from uuid import uuid4
 from wordcloud import WordCloud
 import time
 
-# --- Funzione per mostrare il banner blu con immagine ---
+# --- Funzione per mostrare il banner blu con immagine adattabile ---
 def show_banner():
+    # Carica il logo
     try:
         logo = Image.open("assets/immagine.png")
     except FileNotFoundError:
         st.warning("Banner: file assets/immagine.png non trovato. Inseriscilo nel repo assets/immagine.png.")
         return
-    # Dimensioni banner
+
     banner_height = 80
     banner_color = "#00338D"
-    # Calcola la larghezza in base alla colonna disponibile
-    banner_width = st.columns(1)[0].width if hasattr(st, 'columns') else logo.width + 200
-    banner = Image.new("RGB", (banner_width, banner_height), banner_color)
-    # Ridimensiona logo mantenendo proporzioni
+
+    # Ridimensiona il logo mantenendo proporzioni
     logo_ratio = logo.width / logo.height
     logo_h = banner_height - 20
     logo_w = int(logo_ratio * logo_h)
     logo = logo.resize((logo_w, logo_h), Image.LANCZOS)
-    banner.paste(logo, (10, (banner_height - logo_h) // 2), logo.convert("RGBA"))
-    # Scrivi il testo
-    draw = ImageDraw.Draw(banner)
+
+    # Prepara il font
     try:
         font = ImageFont.truetype("arial.ttf", 32)
     except IOError:
         font = ImageFont.load_default()
+
     text = "Dashboard Risposte"
-    bbox = draw.textbbox((0, 0), text, font=font)
+    # Misura dimensioni del testo con textbbox
+    dummy = Image.new("RGB", (1, 1))
+    draw_dummy = ImageDraw.Draw(dummy)
+    bbox = draw_dummy.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
-    text_x = logo_w + 20
+
+    # Calcola larghezza totale: margine sinistro + logo + gap + testo + margine destro
+    banner_width = 10 + logo_w + 20 + text_width + 10
+
+    # Crea il banner “master”
+    banner = Image.new("RGB", (banner_width, banner_height), banner_color)
+    draw = ImageDraw.Draw(banner)
+
+    # Incolla logo e disegna testo
+    banner.paste(logo, (10, (banner_height - logo_h) // 2), logo.convert("RGBA"))
+    text_x = 10 + logo_w + 20
     text_y = (banner_height - text_height) // 2
     draw.text((text_x, text_y), text, fill="white", font=font)
-    st.image(banner, use_column_width=True)
+
+    # Streamlit lo ridimensiona al 100% della colonna/container
+    st.image(banner, use_container_width=True)
 
 # Mostra banner su tutte le pagine
 show_banner()
