@@ -6,7 +6,7 @@ from datetime import datetime
 import qrcode
 import io
 import base64
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 import plotly.express as px
 from uuid import uuid4
@@ -46,7 +46,9 @@ if not admin_mode and not survey_mode:
     buf = io.BytesIO()
     qr.save(buf, format="PNG")
     buf.seek(0)
-    st.image(buf, caption="Scansiona per aprire il questionario", use_container_width=True)
+    st.image(buf,
+             caption="Scansiona per aprire il questionario",
+             use_container_width=True)
     st.markdown(f"[Oppure clicca qui per il form]({app_url}?survey=1)")
     st.info("Scannerizza o clicca.")
     st.stop()
@@ -56,12 +58,10 @@ if survey_mode and not admin_mode:
     st.title("Questionario")
 
     with st.form("survey"):
-        # Domanda 1
         q1 = st.radio(
             "1) È stato nominato l'esponente responsabile antiriciclaggio?",
             options=["Sì", "No"]
         )
-        # Domanda 2
         q2 = st.radio(
             "2) Se avete risposto Sì, chi avete nominato?",
             options=[
@@ -70,7 +70,6 @@ if survey_mode and not admin_mode:
                 "Altro"
             ]
         )
-        # Domanda 3
         q3 = st.multiselect(
             "3) Quali, tra i seguenti, ritieni possano essere più impattanti sull'operatività dell'intermediario? (max 3)",
             options=[
@@ -100,41 +99,36 @@ if survey_mode and not admin_mode:
     st.stop()
 
 # --- 6) ADMIN DASHBOARD ---
-# Banner personalizzato in alto
-# Carica l'immagine dal repo assets/
-img = Image.open("assets/immagine.png")
-buffered = io.BytesIO()
-img.save(buffered, format="PNG")
-img_b64 = base64.b64encode(buffered.getvalue()).decode()
+# Genera dinamicamente un banner con PIL
+try:
+    logo = Image.open("assets/immagine.png")
+except FileNotFoundError:
+    st.error("File assets/immagine.png non trovato. Assicurati di averlo pushato nel repo.")
+    logo = None
 
-st.markdown(
-    f"""
-    <style>
-      .custom-banner {{
-        background-color: #00338D;
-        padding: 10px 20px;
-        display: flex;
-        align-items: center;
-      }}
-      .custom-banner img {{
-        height: 50px;
-        margin-right: 15px;
-      }}
-      .custom-banner h1 {{
-        color: white;
-        font-size: 28px;
-        margin: 0;
-      }}
-    </style>
-    <div class="custom-banner">
-      <img src="data:image/png;base64,{img_b64}" />
-      <h1>Dashboard Risposte</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+if logo:
+    banner_height = 80
+    banner_color = "#00338D"
+    banner_width = 800
+    banner = Image.new("RGB", (banner_width, banner_height), banner_color)
+    # Ridimensiona logo
+    logo_ratio = logo.width / logo.height
+    logo_h = banner_height - 20
+    logo_w = int(logo_ratio * logo_h)
+    logo = logo.resize((logo_w, logo_h), Image.LANCZOS)
+    banner.paste(logo, (10, (banner_height - logo_h) // 2))
+    # Scrivi il testo
+    draw = ImageDraw.Draw(banner)
+    try:
+        font = ImageFont.truetype("arial.ttf", 32)
+    except:
+        font = ImageFont.load_default()
+    text = "Dashboard Risposte"
+    text_x = logo_w + 20
+    text_y = (banner_height - font.getsize(text)[1]) // 2
+    draw.text((text_x, text_y), text, fill="white", font=font)
+    st.image(banner, use_column_width=True)
 
-# Layout dashboard
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
