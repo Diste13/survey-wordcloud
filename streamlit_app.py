@@ -13,6 +13,43 @@ from uuid import uuid4
 from wordcloud import WordCloud
 import time
 
+# --- Funzione per mostrare il banner blu con immagine ---
+def show_banner():
+    try:
+        logo = Image.open("assets/immagine.png")
+    except FileNotFoundError:
+        st.warning("Banner: file assets/immagine.png non trovato. Inseriscilo nel repo assets/immagine.png.")
+        return
+    # Dimensioni banner
+    banner_height = 80
+    banner_color = "#00338D"
+    # Calcola la larghezza in base alla colonna disponibile
+    banner_width = st.columns(1)[0].width if hasattr(st, 'columns') else logo.width + 200
+    banner = Image.new("RGB", (banner_width, banner_height), banner_color)
+    # Ridimensiona logo mantenendo proporzioni
+    logo_ratio = logo.width / logo.height
+    logo_h = banner_height - 20
+    logo_w = int(logo_ratio * logo_h)
+    logo = logo.resize((logo_w, logo_h), Image.LANCZOS)
+    banner.paste(logo, (10, (banner_height - logo_h) // 2), logo.convert("RGBA"))
+    # Scrivi il testo
+    draw = ImageDraw.Draw(banner)
+    try:
+        font = ImageFont.truetype("arial.ttf", 32)
+    except IOError:
+        font = ImageFont.load_default()
+    text = "Dashboard Risposte"
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+    text_x = logo_w + 20
+    text_y = (banner_height - text_height) // 2
+    draw.text((text_x, text_y), text, fill="white", font=font)
+    st.image(banner, use_column_width=True)
+
+# Mostra banner su tutte le pagine
+show_banner()
+
 # --- 1) Carica secrets ---
 token     = st.secrets["github_token"]
 repo_name = st.secrets["repo_name"]
@@ -56,7 +93,7 @@ if not admin_mode and not survey_mode:
 # --- 5) SURVEY PAGE (solo form) ---
 if survey_mode and not admin_mode:
     st.title("Questionario")
-
+    
     with st.form("survey"):
         q1 = st.radio(
             "1) È stato nominato l'esponente responsabile antiriciclaggio?",
@@ -99,36 +136,7 @@ if survey_mode and not admin_mode:
     st.stop()
 
 # --- 6) ADMIN DASHBOARD ---
-# Genera dinamicamente un banner con PIL
-try:
-    logo = Image.open("assets/immagine.png")
-except FileNotFoundError:
-    st.error("File assets/immagine.png non trovato. Assicurati di averlo pushato nel repo.")
-    logo = None
-
-if logo:
-    banner_height = 80
-    banner_color = "#00338D"
-    banner_width = 800
-    banner = Image.new("RGB", (banner_width, banner_height), banner_color)
-    # Ridimensiona logo
-    logo_ratio = logo.width / logo.height
-    logo_h = banner_height - 20
-    logo_w = int(logo_ratio * logo_h)
-    logo = logo.resize((logo_w, logo_h), Image.LANCZOS)
-    banner.paste(logo, (10, (banner_height - logo_h) // 2))
-    # Scrivi il testo
-    draw = ImageDraw.Draw(banner)
-    try:
-        font = ImageFont.truetype("arial.ttf", 32)
-    except:
-        font = ImageFont.load_default()
-    text = "Dashboard Risposte"
-    text_x = logo_w + 20
-    text_y = (banner_height - font.getsize(text)[1]) // 2
-    draw.text((text_x, text_y), text, fill="white", font=font)
-    st.image(banner, use_column_width=True)
-
+st.title("Dashboard Risposte")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
