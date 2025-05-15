@@ -45,8 +45,10 @@ def show_banner():
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
 
-    # Calcola larghezza totale: margine sinistro + logo + gap + testo + margine destro
-    banner_width = 10 + logo_w + 20 + text_width + 10
+    # Calcola larghezza minima: margine sinistro + logo + gap + testo + margine destro
+    min_width = 10 + logo_w + 20 + text_width + 10
+    # Assicura un'ampiezza di base sufficientemente ampia per farlo scalare correttamente su mobile
+    banner_width = max(min_width, 2000)
 
     # Crea il banner “master”
     banner = Image.new("RGB", (banner_width, banner_height), banner_color)
