@@ -12,20 +12,31 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-
-# --- Leggi i query params PRIMA di tutto ---
-# --- Leggi i query params PRIMA di tutto ---
-params      = st.experimental_get_query_params()
-survey_mode = params.get("survey", ["0"])[0] == "1"
-
-# --- Ora setta la configurazione di pagina in base a survey_mode ---
+# --- 1) PRIMO: setta configurazione pagina WIDE di default ---
 st.set_page_config(
     page_title="Questionario AML",
-    layout="wide" if survey_mode else "centered"
+    layout="wide"
 )
 
-# ... il resto del codice ...
+# --- 2) Leggi i query params SUBITO DOPO ---
+params      = st.query_params
+survey_mode = params.get("survey", ["0"])[0] == "1"
+admin_mode  = params.get("admin",  ["0"])[0] == "1"
 
+# --- 3) Se non survey e non admin, applico CSS per centered narrow (QR page) ---
+if not survey_mode and not admin_mode:
+    st.markdown(
+        """
+        <style>
+          [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
+            max-width:700px !important;
+            margin-left:auto !important;
+            margin-right:auto !important;
+          }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 # --- Carica logo e genera base64 ---
 try:
@@ -35,7 +46,7 @@ try:
 except FileNotFoundError:
     logo_b64 = None
 
-# --- CSS dinamico: form styling + override larghezza admin ---
+# --- CSS dinamico per form e per admin ---
 override_admin_css = """
 /* Restringi larghezza del container solo in admin */
 [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
@@ -96,7 +107,7 @@ if logo_b64:
         unsafe_allow_html=True
     )
 
-# --- Carica secrets e inizializza GitHub ---
+# --- Inizializza GitHub ---
 token     = st.secrets["github_token"]
 repo_name = st.secrets["repo_name"]
 app_url   = st.secrets["app_url"]
@@ -114,7 +125,7 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
             else:
                 raise
 
-# --- Pagina QR ---
+# --- QR Page (landing) ---
 if not admin_mode and not survey_mode:
     st.title("Accedi al Questionario")
     qr = qrcode.make(f"{app_url}?survey=1")
@@ -130,15 +141,11 @@ if survey_mode and not admin_mode:
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
-        bm_yes_no = st.radio(
-            label="", options=["Sì", "No"],
-            horizontal=True, label_visibility="collapsed"
-        )
+        bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True, label_visibility="collapsed")
 
         st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
-            label="",
-            options=[
+            "", [
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
@@ -153,8 +160,7 @@ if survey_mode and not admin_mode:
 
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
         impacts = st.multiselect(
-            label="",
-            options=[
+            "", [
                 "Approccio della supervisione (nuove modalità di interazione)",
                 "Poco tempo per conformarsi",
                 "Implementazioni sui sistemi informatici",
@@ -176,12 +182,10 @@ if survey_mode and not admin_mode:
                 "Impatti protezione dati",
                 "Sottoposizione normativa AML"
             ],
-            max_selections=3,
-            label_visibility="collapsed"
+            max_selections=3, label_visibility="collapsed"
         )
 
-        submitted = st.form_submit_button("Invia")
-        if submitted:
+        if st.form_submit_button("Invia"):
             st.info("Attendere…")
             record = {
                 "bm_yes_no": bm_yes_no,
