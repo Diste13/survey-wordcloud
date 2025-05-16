@@ -299,18 +299,28 @@ if notes_list:
         st.write(f"- {note}")
     st.write("---")
 
-# WordCloud Q3
+# — WordCloud Q3 ad alta definizione —
 freqs = {}
 for r in data:
     for choice in r.get("impacts", []):
         freqs[choice] = freqs.get(choice, 0) + 1
+
 if freqs:
-    wc = WordCloud(width=800, height=400, background_color="white", color_func=random_color)
+    # 1) Genera il wordcloud con dimensioni maggiori
+    wc = WordCloud(
+        width=1600,      # prima era 800
+        height=800,      # prima era 400
+        background_color="white",
+        color_func=random_color
+    )
     wc.generate_from_frequencies(freqs)
-    fig, ax = plt.subplots(figsize=(8, 4), dpi=300)
-    ax.imshow(wc, interpolation="bilinear")
-    ax.axis("off")
+
+    # 2) Prendi l'immagine PIL e mostrala direttamente
+    img = wc.to_image()
+
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
-    st.pyplot(fig, use_container_width=True)
+    # con use_column_width la Streamlit ridimensiona in modo più pulito
+    st.image(img, use_column_width=True)
 else:
     st.info("Nessuna risposta per le preoccupazioni/impatti.")
+
