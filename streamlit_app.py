@@ -1,9 +1,9 @@
 import streamlit as st
+import time
 from github import Github, GithubException
 import json
 import random
 from datetime import datetime
-import time
 import qrcode
 import io
 import base64
@@ -12,14 +12,13 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-# --- Leggi i query params PRIMA di set_page_config ---
-params      = st.experimental_get_query_params()
+# --- set_page_config deve essere il PRIMO comando Streamlit ---
+st.set_page_config(page_title="Questionario AML", layout="wide")
+
+# --- Leggi subito i query params ---
+params      = st.query_params
 admin_mode  = params.get("admin", ["0"])[0] == "1"
 survey_mode = params.get("survey", ["0"])[0] == "1"
-
-# --- Configurazione pagina con layout dinamico ---
-layout = "wide" if survey_mode else "centered"
-st.set_page_config(page_title="Questionario AML", layout=layout)
 
 # --- Carica logo e genera base64 ---
 try:
@@ -29,10 +28,10 @@ try:
 except FileNotFoundError:
     logo_b64 = None
 
-# --- CSS dinamico ---
+# --- CSS dinamico: override larghezza in admin + form styling ---
 override_admin_css = """
 .reportview-container .main .block-container {
-  max-width: 700px;  /* Larghezza massima in admin */
+  max-width: 700px;
   margin: 0 auto;
 }
 """ if admin_mode else ""
@@ -58,13 +57,12 @@ app_css = f"""
   /* Spazio per il contenuto sotto la barra */
   [data-testid="stBlockContainer"] {{ padding-top: 100px; }}
 
-  /* ---- STILI FORM (survey) ---- */
+  /* STILI FORM (survey) */
   .form-container {{
     max-width: 900px !important;
     width: 90% !important;
     margin: 0 auto 40px auto;
   }}
-  /* Rimuove sfondo, bordo e box-shadow da tutto il form */
   .form-container form[role="form"],
   .form-container form[role="form"] > div,
   .form-container form[role="form"] > div > div {{
@@ -72,15 +70,13 @@ app_css = f"""
     border: none !important;
     box-shadow: none !important;
   }}
-
-  /* Allarga i widget dentro il form */
   .form-container [data-testid="stRadio"],
   .form-container [data-testid="stMultiselect"] {{
     max-width: 900px !important;
     width: 90% !important;
   }}
 
-  /* ---- OVERRIDE LARGHEZZA SOLO PER ADMIN ---- */
+  /* OVERRIDE LARGHEZZA SOLO IN ADMIN */
   {override_admin_css}
 </style>
 """
@@ -100,7 +96,6 @@ app_url   = st.secrets["app_url"]
 g = Github(token)
 repo = g.get_repo(repo_name)
 
-# Funzione di retry per GitHub
 def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.5):
     for attempt in range(1, max_tries+1):
         try:
@@ -111,11 +106,6 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
                 continue
             else:
                 raise
-
-# --- Gestione query params (di nuovo, per coerenza) ---
-# (già letti sopra in params, qui li riusiamo)
-admin_mode  = admin_mode
-survey_mode = survey_mode
 
 # --- Pagina QR ---
 if not admin_mode and not survey_mode:
@@ -133,25 +123,31 @@ if survey_mode and not admin_mode:
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
-        bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True)
+        bm_yes_no = st.radio(
+            label="", options=["Sì", "No"],
+            horizontal=True, label_visibility="collapsed"
+        )
 
-        st.write("## 2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
+        st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
-            "", [
+            label="",
+            options=[
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                 "Altro (specificare nelle note)",
                 "Non ancora definito"
-            ]
+            ],
+            label_visibility="collapsed"
         )
         bm_notes = None
-        if bm_nominee == "Altro (specificare nelle note)":
+        if bm_nominee.startswith("Altro"):
             bm_notes = st.text_area("Specifica qui nelle note:")
 
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
         impacts = st.multiselect(
-            "", [
+            label="",
+            options=[
                 "Approccio della supervisione (nuove modalità di interazione)",
                 "Poco tempo per conformarsi",
                 "Implementazioni sui sistemi informatici",
@@ -172,7 +168,9 @@ if survey_mode and not admin_mode:
                 "Misure amministrative e sanzioni",
                 "Impatti protezione dati",
                 "Sottoposizione normativa AML"
-            ], max_selections=3
+            ],
+            max_selections=3,
+            label_visibility="collapsed"
         )
 
         submitted = st.form_submit_button("Invia")
@@ -208,7 +206,6 @@ except GithubException:
     st.stop()
 
 palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#FD349C"]
-
 def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
     return random.choice(palette)
 
@@ -254,4 +251,3 @@ if freqs:
     st.pyplot(fig, use_container_width=True)
 else:
     st.info("Nessuna risposta per le preoccupazioni/impatti.")
-
