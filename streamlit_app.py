@@ -3,8 +3,7 @@ from github import Github, GithubException
 import json
 import random
 from datetime import datetime
-time
-time
+import time
 import qrcode
 import io
 import base64
