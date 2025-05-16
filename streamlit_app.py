@@ -83,8 +83,6 @@ app_css = f"""
     z-index:9999;
   }}
   .top_bar img {{ height:60px; }}
-
-  /* Solo il logo Acorà più piccolo */
   .logo-acora {{ height:40px !important; }}
 
   /* Spazio per il contenuto sotto la barra */
@@ -107,6 +105,11 @@ app_css = f"""
   .form-container [data-testid="stMultiselect"] {{
     max-width:900px !important;
     width:90% !important;
+  }}
+
+  /* workaround: nasconde la prima voce "" per ogni st.radio in .form-container */
+  .form-container [data-testid="stRadio"] > div > div > div:nth-child(1) {{
+    display: none !important;
   }}
 </style>
 """
@@ -162,18 +165,13 @@ if not admin_mode and not survey_mode:
     qr.save(buf, format="PNG")
     buf.seek(0)
 
-    # Centra il QR usando 3 colonne
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image(buf, caption="Scansiona per aprire il questionario", width=800)
 
-    # Link cliccabile
     survey_url = f"{app_url}?survey=1"
     st.markdown(f"[Oppure clicca qui per il form]({survey_url})")
-
-    # URL puro al posto del testo precedente
     st.info(survey_url)
-
     st.stop()
 
 # ----------------------------------------------------------------
@@ -186,8 +184,7 @@ if survey_mode and not admin_mode:
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
         bm_yes_no = st.radio(
             "", 
-            ["Seleziona…", "Sì", "No"], 
-            index=0, 
+            ["", "Sì", "No"], 
             horizontal=True, 
             label_visibility="collapsed"
         )
@@ -196,14 +193,13 @@ if survey_mode and not admin_mode:
         bm_nominee = st.radio(
             "", 
             [
-              "Seleziona…",
+              "",
               "Amministratore Delegato",
               "Altro membro esecutivo del Consiglio di Amministrazione",
               "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
               "Altro (specificare nelle note)",
               "Non ancora definito"
             ],
-            index=0,
             label_visibility="collapsed"
         )
         bm_notes = None
@@ -254,6 +250,7 @@ if survey_mode and not admin_mode:
                 st.success("Risposte inviate")
             except GithubException:
                 st.error("Errore nell'invio. Riprova più tardi.")
+
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
