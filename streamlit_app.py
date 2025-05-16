@@ -14,14 +14,14 @@ from wordcloud import WordCloud
 
 
 # --- Leggi i query params PRIMA di tutto ---
+# --- Leggi i query params PRIMA di tutto ---
 params      = st.experimental_get_query_params()
 survey_mode = params.get("survey", ["0"])[0] == "1"
-admin_mode  = params.get("admin",  ["0"])[0] == "1"
 
-# --- Ora setta la configurazione di pagina in base a survey_mode o admin_mode ---
+# --- Ora setta la configurazione di pagina in base a survey_mode ---
 st.set_page_config(
     page_title="Questionario AML",
-    layout="wide" if survey_mode  else "centered"
+    layout="wide" if survey_mode else "centered"
 )
 
 # ... il resto del codice ...
