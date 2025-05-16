@@ -307,7 +307,7 @@ for r in data:
 if freqs:
     wc = WordCloud(width=800, height=400, background_color="white", color_func=random_color)
     wc.generate_from_frequencies(freqs)
-    fig, ax = plt.subplots(figsize=(8, 4), dpi=200)
+    fig, ax = plt.subplots(figsize=(8, 4), dpi=300)
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
