@@ -12,13 +12,20 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-# --- deve essere il PRIMO comando Streamlit ---
-st.set_page_config(page_title="Questionario AML", layout="centered")
 
-# --- Leggi subito i query params ---
-params      = st.query_params
-admin_mode  = params.get("admin", ["0"])[0] == "1"
+# --- Leggi i query params PRIMA di tutto ---
+params      = st.experimental_get_query_params()
 survey_mode = params.get("survey", ["0"])[0] == "1"
+admin_mode  = params.get("admin",  ["0"])[0] == "1"
+
+# --- Ora setta la configurazione di pagina in base a survey_mode o admin_mode ---
+st.set_page_config(
+    page_title="Questionario AML",
+    layout="wide" if survey_mode  else "centered"
+)
+
+# ... il resto del codice ...
+
 
 # --- Carica logo e genera base64 ---
 try:
