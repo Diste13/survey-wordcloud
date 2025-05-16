@@ -167,8 +167,13 @@ if not admin_mode and not survey_mode:
     with col2:
         st.image(buf, caption="Scansiona per aprire il questionario", width=800)
 
-    st.markdown(f"[Oppure clicca qui per il form]({app_url}?survey=1)")
-    st.info("Scannerizza o clicca.")
+    # Link cliccabile
+    survey_url = f"{app_url}?survey=1"
+    st.markdown(f"[Oppure clicca qui per il form]({survey_url})")
+
+    # URL puro al posto del testo precedente
+    st.info(survey_url)
+
     st.stop()
 
 # ----------------------------------------------------------------
@@ -179,17 +184,26 @@ if survey_mode and not admin_mode:
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
-        bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True, label_visibility="collapsed")
+        bm_yes_no = st.radio(
+            "", 
+            ["Seleziona…", "Sì", "No"], 
+            index=0, 
+            horizontal=True, 
+            label_visibility="collapsed"
+        )
 
         st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
-            "", [
-                "Amministratore Delegato",
-                "Altro membro esecutivo del Consiglio di Amministrazione",
-                "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
-                "Altro (specificare nelle note)",
-                "Non ancora definito"
+            "", 
+            [
+              "Seleziona…",
+              "Amministratore Delegato",
+              "Altro membro esecutivo del Consiglio di Amministrazione",
+              "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
+              "Altro (specificare nelle note)",
+              "Non ancora definito"
             ],
+            index=0,
             label_visibility="collapsed"
         )
         bm_notes = None
@@ -220,7 +234,8 @@ if survey_mode and not admin_mode:
                 "Impatti protezione dati",
                 "Sottoposizione normativa AML"
             ],
-            max_selections=3, label_visibility="collapsed"
+            max_selections=3, 
+            label_visibility="collapsed"
         )
 
         if st.form_submit_button("Invia"):
@@ -295,7 +310,7 @@ for r in data:
 if freqs:
     wc = WordCloud(width=800, height=400, background_color="white", color_func=random_color)
     wc.generate_from_frequencies(freqs)
-    fig, ax = plt.subplots(figsize=(8, 4), dpi=300)
+    fig, ax = plt.subplots(figsize=(8, 4), dpi=200)
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
