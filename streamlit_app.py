@@ -320,7 +320,7 @@ if freqs:
 
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
     # con use_column_width la Streamlit ridimensiona in modo più pulito
-    st.image(img, use_column_width=True)
+    st.image(img, use_container_width =True)
 else:
     st.info("Nessuna risposta per le preoccupazioni/impatti.")
 
