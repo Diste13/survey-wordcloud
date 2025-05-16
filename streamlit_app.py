@@ -135,7 +135,7 @@ if not admin_mode and not survey_mode:
     st.title("Accedi al Questionario")
     qr = qrcode.make(f"{app_url}?survey=1")
     buf = io.BytesIO(); qr.save(buf, format="PNG"); buf.seek(0)
-    st.image(buf, caption="Scansiona per aprire il questionario", use_container_width=True)
+    st.image(buf, caption="Scansiona per aprire il questionario", width=200)
     st.markdown(f"[Oppure clicca qui per il form]({app_url}?survey=1)")
     st.info("Scannerizza o clicca.")
     st.stop()
