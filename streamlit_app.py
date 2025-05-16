@@ -35,7 +35,7 @@ if not survey_mode and not admin_mode:
     st.markdown(
         """
         <style>
-          [data-testid=\"stAppViewContainer\"] [data-testid=\"stBlockContainer\"] {
+          [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
             max-width:700px !important;
             margin-left:auto !important;
             margin-right:auto !important;
@@ -72,7 +72,7 @@ app_css = f"""
 <style>
   /* Nascondi header e sidebar default */
   header {{ visibility: hidden; }}
-  [data-testid=\"stHeader\"], [data-testid=\"stSidebar\"] {{
+  [data-testid="stHeader"], [data-testid="stSidebar"] {{
     background-color: #00338D !important;
   }}
 
@@ -84,8 +84,11 @@ app_css = f"""
   }}
   .top_bar img {{ height:60px; }}
 
+  /* Solo il logo Acorà più piccolo */
+  .logo-acora {{ height:40px !important; }}
+
   /* Spazio per il contenuto sotto la barra */
-  [data-testid=\"stBlockContainer\"] {{ padding-top:100px; }}
+  [data-testid="stBlockContainer"] {{ padding-top:100px; }}
 
   /* --- STILI FORM (survey) --- */
   .form-container {{
@@ -93,15 +96,15 @@ app_css = f"""
     width:90% !important;
     margin:0 auto 40px auto;
   }}
-  .form-container form[role=\"form\"],
-  .form-container form[role=\"form\"] > div,
-  .form-container form[role=\"form\"] > div > div {{
+  .form-container form[role="form"],
+  .form-container form[role="form"] > div,
+  .form-container form[role="form"] > div > div {{
     background:none !important;
     border:none !important;
     box-shadow:none !important;
   }}
-  .form-container [data-testid=\"stRadio\"],
-  .form-container [data-testid=\"stMultiselect\"] {{
+  .form-container [data-testid="stRadio"],
+  .form-container [data-testid="stMultiselect"] {{
     max-width:900px !important;
     width:90% !important;
   }}
@@ -117,7 +120,11 @@ if logo_b64 or logo2_b64:
     if logo_b64:
         imgs_html += f"<img src='data:image/png;base64,{logo_b64}' alt='Logo' />"
     if logo2_b64:
-        imgs_html += f"<img src='data:image/png;base64,{logo2_b64}' alt='Acorà Logo' style='margin-left:20px;' />"
+        imgs_html += (
+            f"<img class='logo-acora' "
+            f"src='data:image/png;base64,{logo2_b64}' "
+            f"alt='Acorà Logo' style='margin-left:20px;' />"
+        )
     st.markdown(
         f"<div class='top_bar'>{imgs_html}</div>",
         unsafe_allow_html=True
@@ -288,7 +295,7 @@ for r in data:
 if freqs:
     wc = WordCloud(width=800, height=400, background_color="white", color_func=random_color)
     wc.generate_from_frequencies(freqs)
-    fig, ax = plt.subplots(figsize=(8, 4), dpi=200)
+    fig, ax = plt.subplots(figsize=(8, 4), dpi=300)
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
