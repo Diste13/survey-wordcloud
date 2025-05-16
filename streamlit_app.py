@@ -194,7 +194,6 @@ if survey_mode and not admin_mode:
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
-                "Altro (specificare nelle note)",
                 "Non ancora definito"
             ],
             label_visibility="collapsed",
@@ -215,7 +214,6 @@ if survey_mode and not admin_mode:
                 "Impatti sull’AML Governance",
                 "Impatti su metodologie e modelli",
                 "Impatti sui processi di Know Your Customer",
-                "Altro (specificare nelle note)",
                 "Nessun impatto identificato al momento",
                 "Incertezza normativa e legame con locale",
                 "Misure per High-net-worth individuals",
