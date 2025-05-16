@@ -13,7 +13,7 @@ from uuid import uuid4
 from wordcloud import WordCloud
 
 # --- deve essere il PRIMO comando Streamlit ---
-st.set_page_config(page_title="Questionario AML", layout="wide")
+st.set_page_config(page_title="Questionario AML", layout="centered")
 
 # --- Leggi subito i query params ---
 params      = st.query_params
