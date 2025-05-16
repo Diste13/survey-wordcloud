@@ -88,7 +88,7 @@ app_css = f"""
   /* Spazio per il contenuto sotto la barra */
   [data-testid="stBlockContainer"] {{ padding-top:100px; }}
 
-  /* --- STILI FORM (survey) --- */
+  /* STILI FORM (survey) */
   .form-container {{
     max-width:900px !important;
     width:90% !important;
@@ -107,13 +107,7 @@ app_css = f"""
     width:90% !important;
   }}
 
-  /* Workaround: rimuove completamente la prima voce radio (vuota) */
-  .form-container [data-testid="stRadio"] > div > div > div:nth-child(1) {{
-    display: none !important;
-  }}
-  .form-container [data-testid="stRadio"] > div > div > div:nth-child(1) * {{
-    display: none !important;
-  }}
+  /* RIMOSSO: workaround per voce vuota */
 </style>
 """
 st.markdown(app_css, unsafe_allow_html=True)
@@ -184,19 +178,20 @@ if survey_mode and not admin_mode:
     st.title("EU AML Package")
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
+        # — Domanda 1 senza opzione vuota e senza default pre-selezionato —
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
         bm_yes_no = st.radio(
             "",
-            ["", "Sì", "No"],
+            ["Sì", "No"],
             horizontal=True,
             label_visibility="collapsed"
         )
 
+        # — Domanda 2 senza opzione vuota e senza default pre-selezionato —
         st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
             "",
             [
-                "",
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
@@ -209,6 +204,7 @@ if survey_mode and not admin_mode:
         if bm_nominee.startswith("Altro"):
             bm_notes = st.text_area("Specifica qui nelle note:")
 
+        # — Domanda 3 invariata —
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
         impacts = st.multiselect(
             "",
