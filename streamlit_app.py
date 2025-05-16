@@ -3,14 +3,18 @@ from github import Github, GithubException
 import json
 import random
 from datetime import datetime
+time
+time
 import qrcode
 import io
 import base64
-import time
 import matplotlib.pyplot as plt
 import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
+
+# --- Configurazione pagina ---
+st.set_page_config(page_title="Questionario AML", layout="wide")
 
 # --- Inserimento CSS e HTML per top bar fissa e form styling ---
 try:
@@ -44,15 +48,18 @@ app_css = """
     width: 90% !important;
     margin: 0 auto 40px auto;
   }
-  /* Rimuove bordo e box-shadow interno del form */
-  .form-container .stForm {
-    background-color: transparent !important;
+  /* Rimuove sfondo, bordo e box-shadow interno del form */
+  .form-container form {
+    background: none !important;
     border: none !important;
     box-shadow: none !important;
+    width: 100% !important;
   }
-  /* Spazio tra le sezioni del form */
-  .form-container .stForm > div {
-    margin-bottom: 24px;
+  /* Allarga i singoli widget dentro il form */
+  .form-container [data-testid="stRadio"],
+  .form-container [data-testid="stMultiselect"] {
+    max-width: 900px !important;
+    width: 90% !important;
   }
 </style>
 """
@@ -71,6 +78,8 @@ repo_name = st.secrets["repo_name"]
 app_url   = st.secrets["app_url"]
 g = Github(token)
 repo = g.get_repo(repo_name)
+
+# Funzione di retry per GitHub
 
 def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.5):
     for attempt in range(1, max_tries+1):
@@ -101,7 +110,6 @@ if not admin_mode and not survey_mode:
 # --- Survey Page ---
 if survey_mode and not admin_mode:
     st.title("Questionario AML")
-    # wrapper per il form
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
