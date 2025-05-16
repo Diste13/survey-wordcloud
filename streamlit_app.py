@@ -308,8 +308,8 @@ for r in data:
 if freqs:
     # 1) Genera il wordcloud con dimensioni maggiori
     wc = WordCloud(
-        width=1600,      # prima era 800
-        height=800,      # prima era 400
+        width=3200,      # prima era 800
+        height=1600,      # prima era 400
         background_color="white",
         color_func=random_color
     )
