@@ -133,12 +133,27 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
 # ----------------------------------------------------------------
 if not admin_mode and not survey_mode:
     st.title("Accedi al Questionario")
+
+    # Genera il QR code
     qr = qrcode.make(f"{app_url}?survey=1")
-    buf = io.BytesIO(); qr.save(buf, format="PNG"); buf.seek(0)
-    st.image(buf, caption="Scansiona per aprire il questionario", width=800)
+    buf = io.BytesIO()
+    qr.save(buf, format="PNG")
+    buf.seek(0)
+
+    # Centra il QR usando 3 colonne (sinistra/destra flessibili, QR al centro)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image(
+            buf,
+            caption="Scansiona per aprire il questionario",
+            width=800
+        )
+
+    # Link alternativo e istruzioni
     st.markdown(f"[Oppure clicca qui per il form]({app_url}?survey=1)")
     st.info("Scannerizza o clicca.")
     st.stop()
+
 
 # ----------------------------------------------------------------
 # 9) Survey Page
