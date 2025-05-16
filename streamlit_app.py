@@ -51,14 +51,17 @@ app_css = """
   .top_bar img { height: 60px; }
   /* Spazio per il contenuto sotto la barra */
   [data-testid="stBlockContainer"] { padding-top: 100px; }
-  /* Styling survey form: rimuove bordo e box shadow, aggiunge margine tra domande */
+  /* Styling survey form: rimuove bordo e box shadow, aggiunge margine tra domande, e imposta larghezza più ampia */
   .stForm {
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    width: 80% !important;
+    max-width: 900px !important;
+    margin: 0 auto 40px auto;
   }
   .stForm > div {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 </style>
 """
