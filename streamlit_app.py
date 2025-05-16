@@ -310,7 +310,7 @@ if freqs:
     wc = WordCloud(
         width=1600,      # prima era 800
         height=800, 
-        scale=4# prima era 400
+        scale=4,# prima era 400
         background_color="white",
         color_func=random_color
     )
