@@ -12,7 +12,7 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-# --- set_page_config deve essere il PRIMO comando Streamlit ---
+# --- deve essere il PRIMO comando Streamlit ---
 st.set_page_config(page_title="Questionario AML", layout="wide")
 
 # --- Leggi subito i query params ---
@@ -28,11 +28,13 @@ try:
 except FileNotFoundError:
     logo_b64 = None
 
-# --- CSS dinamico: override larghezza in admin + form styling ---
+# --- CSS dinamico: form styling + override larghezza admin ---
 override_admin_css = """
-.reportview-container .main .block-container {
-  max-width: 700px;
-  margin: 0 auto;
+/* Restringi larghezza del container solo in admin */
+[data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
+  max-width: 700px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 """ if admin_mode else ""
 
@@ -46,37 +48,35 @@ app_css = f"""
 
   /* Top bar personalizzata */
   .top_bar {{
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100px;
-    background-color: #00338D;
-    display: flex; align-items: center; padding-left: 20px;
-    z-index: 9999;
+    position: fixed; top:0; left:0; width:100vw; height:100px;
+    background-color:#00338D; display:flex; align-items:center; padding-left:20px;
+    z-index:9999;
   }}
-  .top_bar img {{ height: 60px; }}
+  .top_bar img {{ height:60px; }}
 
   /* Spazio per il contenuto sotto la barra */
-  [data-testid="stBlockContainer"] {{ padding-top: 100px; }}
+  [data-testid="stBlockContainer"] {{ padding-top:100px; }}
 
-  /* STILI FORM (survey) */
+  /* --- STILI FORM (survey) --- */
   .form-container {{
-    max-width: 900px !important;
-    width: 90% !important;
-    margin: 0 auto 40px auto;
+    max-width:900px !important;
+    width:90% !important;
+    margin:0 auto 40px auto;
   }}
   .form-container form[role="form"],
   .form-container form[role="form"] > div,
   .form-container form[role="form"] > div > div {{
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
+    background:none !important;
+    border:none !important;
+    box-shadow:none !important;
   }}
   .form-container [data-testid="stRadio"],
   .form-container [data-testid="stMultiselect"] {{
-    max-width: 900px !important;
-    width: 90% !important;
+    max-width:900px !important;
+    width:90% !important;
   }}
 
-  /* OVERRIDE LARGHEZZA SOLO IN ADMIN */
+  /* --- OVERRIDE LARGHEZZA SOLO IN ADMIN --- */
   {override_admin_css}
 </style>
 """
