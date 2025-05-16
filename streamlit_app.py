@@ -13,7 +13,6 @@ from uuid import uuid4
 from wordcloud import WordCloud
 
 # --- Inserimento CSS e HTML per top bar fissa e form styling ---
-# Carica logo e convertilo in base64
 try:
     with open("assets/immagine.png", "rb") as img_file:
         logo_data = img_file.read()
@@ -25,30 +24,46 @@ app_css = """
 <style>
   /* Nascondi header e sidebar default */
   header { visibility: hidden; }
-  [data-testid="stHeader"],
-  [data-testid="stSidebar"] { background-color: #00338D !important; }
-
+  [data-testid="stHeader"], [data-testid="stSidebar"] {
+    background-color: #00338D !important;
+  }
   /* Top bar personalizzata */
   .top_bar {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100px;
-    background-color: #00338D; display: flex; align-items: center;
-    padding-left: 20px; z-index: 9999;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100px;
+    background-color: #00338D;
+    display: flex; align-items: center; padding-left: 20px;
+    z-index: 9999;
   }
   .top_bar img { height: 60px; }
-
   /* Spazio per il contenuto sotto la barra */
   [data-testid="stBlockContainer"] { padding-top: 100px; }
-
-  /* Rimuove bordo e box shadow dal form */
-  .stForm { background-color: transparent !important; border: none !important; box-shadow: none !important; }
-  .stForm > div { margin-bottom: 24px; }
+  /* Wrapper personalizzato per il form */
+  .form-container {
+    max-width: 900px !important;
+    width: 90% !important;
+    margin: 0 auto 40px auto;
+  }
+  /* Rimuove bordo e box-shadow interno del form */
+  .form-container .stForm {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  /* Spazio tra le sezioni del form */
+  .form-container .stForm > div {
+    margin-bottom: 24px;
+  }
 </style>
 """
 st.markdown(app_css, unsafe_allow_html=True)
 
-# Disegna top_bar con logo
+# Disegna top bar con logo
 if logo_b64:
-    st.markdown(f"<div class='top_bar'><img src='data:image/png;base64,{logo_b64}' alt='Logo' /></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div class='top_bar'><img src='data:image/png;base64,{logo_b64}' alt='Logo' /></div>",
+        unsafe_allow_html=True
+    )
 
 # --- Carica secrets e inizializza GitHub ---
 token     = st.secrets["github_token"]
@@ -83,30 +98,32 @@ if not admin_mode and not survey_mode:
     st.info("Scannerizza o clicca.")
     st.stop()
 
-# --- Survey Page con colonne per larghezza ---
+# --- Survey Page ---
 if survey_mode and not admin_mode:
     st.title("Questionario AML")
-    # Usare colonne per centrare e allargare il form
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col2:
-        with st.form("survey"):
-            st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
-            bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True)
+    # wrapper per il form
+    st.markdown("<div class='form-container'>", unsafe_allow_html=True)
+    with st.form("survey"):
+        st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
+        bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True)
 
-            st.write("## 2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
-            bm_nominee = st.radio("", [
+        st.write("## 2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
+        bm_nominee = st.radio(
+            "", [
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                 "Altro (specificare nelle note)",
                 "Non ancora definito"
-            ])
-            bm_notes = None
-            if bm_nominee == "Altro (specificare nelle note)":
-                bm_notes = st.text_area("Specifica qui nelle note:")
+            ]
+        )
+        bm_notes = None
+        if bm_nominee == "Altro (specificare nelle note)":
+            bm_notes = st.text_area("Specifica qui nelle note:")
 
-            st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
-            impacts = st.multiselect("", [
+        st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
+        impacts = st.multiselect(
+            "", [
                 "Approccio della supervisione (nuove modalità di interazione)",
                 "Poco tempo per conformarsi",
                 "Implementazioni sui sistemi informatici",
@@ -127,10 +144,12 @@ if survey_mode and not admin_mode:
                 "Misure amministrative e sanzioni",
                 "Impatti protezione dati",
                 "Sottoposizione normativa AML"
-            ], max_selections=3)
+            ], max_selections=3
+        )
 
-            submitted = st.form_submit_button("Invia")
+        submitted = st.form_submit_button("Invia")
         if submitted:
+            st.info("Attendere…")
             record = {"bm_yes_no": bm_yes_no, "bm_nominee": bm_nominee, "bm_notes": bm_notes, "impacts": impacts}
             ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
             fname = f"responses/{ts}-{uuid4()}.json"
@@ -140,6 +159,7 @@ if survey_mode and not admin_mode:
                 st.success("Risposte inviate")
             except GithubException:
                 st.error("Errore nell'invio. Riprova più tardi.")
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # --- Admin Dashboard ---
@@ -159,6 +179,7 @@ palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#F
 def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
     return random.choice(palette)
 
+# Istogrammi domande 1 e 2
 for q_key, title, labels in [
     ("bm_yes_no", "1) AML Board Member nominato?", "Risposta"),
     ("bm_nominee", "2) Chi come AML Board Member?", "Soggetto")
@@ -177,6 +198,7 @@ for q_key, title, labels in [
         st.info(f"Nessuna risposta per la domanda {q_key}.")
     st.write("---")
 
+# Note extra per 'Altro'
 notes_list = [r.get("bm_notes") for r in data if r.get("bm_notes")]
 if notes_list:
     st.subheader("Note AML Board Member")
@@ -184,6 +206,7 @@ if notes_list:
         st.write(f"- {note}")
     st.write("---")
 
+# WordCloud Q3
 freqs = {}
 for r in data:
     for choice in r.get("impacts", []):
