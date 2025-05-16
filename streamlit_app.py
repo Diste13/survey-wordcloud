@@ -108,31 +108,72 @@ if not admin_mode and not survey_mode:
 
 # --- 5) Survey Page ---
 if survey_mode and not admin_mode:
-    st.title("Questionario")
+    st.title("Questionario AML")
     with st.form("survey"):
-        q1 = st.radio("1) È stato nominato l'esponente responsabile antiriciclaggio?", ["Sì", "No"])
-        q2 = st.radio("2) Se avete risposto Sì, chi avete nominato?", ["Amministratore Delegato", "Membro del CdA non esecutivo", "Altro"])
-        q3 = st.multiselect(
-            "3) Quali, tra i seguenti, ritieni possano essere più impattanti sull'operatività dell'intermediario? (max 3)",
-            ["Governance dei gruppi", "Controllo costante", "Adeguata verifica", "Nuovi schemi di segnalazione alla UIF", "Altro"],
+        bm_yes_no = st.radio(
+            "1) Si è già provveduto a nominare l’AML Board Member?", 
+            ["Sì", "No"]
+        )
+        bm_nominee = st.radio(
+            "2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?",
+            [
+                "Amministratore Delegato",
+                "Altro membro esecutivo del Consiglio di Amministrazione",
+                "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
+                "Altro (specificare nelle note)",
+                "Non ancora definito"
+            ]
+        )
+        # Campo note per domanda 2
+        bm_notes = None
+        if bm_nominee == "Altro (specificare nelle note)":
+            bm_notes = st.text_area(
+                "2a) Selezionato 'Altro': specifica qui nelle note",
+                "",
+                help="Inserisci dettagli aggiuntivi per l'opzione 'Altro'."
+            )
+        impacts = st.multiselect(
+            "Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo che verrà definito nel contesto dell’AML Package? (selezionare fino a 3 opzioni)",
+            [
+                "Approccio della supervisione (supervisione diretta, nuove metodologie/ modalità di interazione con l’autorità, etc.)",
+                "Poco tempo per conformarsi alla grande quantità di normative attese",
+                "Implementazioni sui sistemi informatici legate alle novità normative",
+                "Impatti sull’AML Governance",
+                "Impatti su metodologie (e.g. Risk assessment) e modelli (e.g. profilatura, transaction monitoring)",
+                "Impatti sui processi di Know Your Customer",
+                "Altro (specificare nelle note)",
+                "Nessun impatto identificato al momento",
+                "Incertezza legata alla mancanza di chiarezza/ dettagli del nuovo quadro normativo e il suo legame con con la normativa locale non espressamente abrogata",
+                "Misure da applicare a High-net-worth individuals",
+                "Estensione della definizione di Politically Exposed Persons (PEPs)",
+                "Requisiti sulla titolarità effettiva",
+                "Aggiornamento dell’adeguata verifica (ogni anno per i clienti ad alto rischio e ogni cinque anni per clienti con profilo diverso da alto)",
+                "Modifiche nella Policy di individuazione dei Paesi Terzi ad Alto Rischio",
+                "Targeted Financial sanctions",
+                "Limite al contante",
+                "Outsourcing",
+                "Misure amministrative e sanzioni",
+                "Impatti sulla protezione e condivisione dei dati",
+                "Sottoposizione alla normativa AML come soggetti obbligati"
+            ],
             max_selections=3
         )
         submitted = st.form_submit_button("Invia")
     if submitted:
         st.info("Attendere…")
-        record = {"q1": q1, "q2": q2, "q3": q3}
+        record = {"bm_yes_no": bm_yes_no, "bm_nominee": bm_nominee, "bm_notes": bm_notes, "impacts": impacts}
         ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
         fname = f"responses/{ts}-{uuid4()}.json"
         payload = json.dumps(record, ensure_ascii=False, indent=2)
         try:
-            create_file_with_retry(repo, fname, "Nuova risposta", payload)
+            create_file_with_retry(repo, fname, "Nuova risposta AML", payload)
             st.success("Risposte inviate")
         except GithubException:
             st.error("Errore nell'invio. Riprova più tardi.")
     st.stop()
 
 # --- 6) Admin Dashboard ---
-st.title("Dashboard Risposte")
+st.title("Dashboard Risposte AML")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
@@ -150,11 +191,11 @@ palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#F
 def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
     return random.choice(palette)
 
-# Istogrammi Q1 e Q2
-for idx, (q_key, title, labels) in enumerate([
-    ("q1", "1) Esponente responsabile nominato?", "Risposta"),
-    ("q2", "2) Chi avete nominato?", "Chi nominato")
-]):
+# Istogrammi BM Yes/No e Nominee
+for q_key, title, labels in [
+    ("bm_yes_no", "1) AML Board Member nominato?", "Risposta"),
+    ("bm_nominee", "2) Chi come AML Board Member?", "Soggetto")
+]:
     counts = {}
     for r in data:
         ans = r.get(q_key, "").strip()
@@ -166,21 +207,29 @@ for idx, (q_key, title, labels) in enumerate([
         st.subheader(title)
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info(f"Nessuna risposta per la Domanda {q_key[-1]}.")
+        st.info(f"Nessuna risposta per la domanda {q_key}.")
     st.write("---")
 
-# Wordcloud Q3
-freqs_q3 = {}
+# Mostra anche note se presenti
+notes_list = [r.get("bm_notes") for r in data if r.get("bm_notes")]
+if notes_list:
+    st.subheader("Note AML Board Member")
+    for note in notes_list:
+        st.write(f"- {note}")
+    st.write("---")
+
+# Wordcloud Impacts
+freqs = {}
 for r in data:
-    for choice in r.get("q3", []):
-        freqs_q3[choice] = freqs_q3.get(choice, 0) + 1
-if freqs_q3:
+    for choice in r.get("impacts", []):
+        freqs[choice] = freqs.get(choice, 0) + 1
+if freqs:
     wc = WordCloud(width=800, height=400, background_color="white", color_func=random_color)
-    wc.generate_from_frequencies(freqs_q3)
+    wc.generate_from_frequencies(freqs)
     fig, ax = plt.subplots(figsize=(8, 4), dpi=200)
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
-    st.subheader("3) Punti più impattanti (Q3)")
+    st.subheader("Principali preoccupazioni ed impatti - AML Package")
     st.pyplot(fig, use_container_width=True)
 else:
-    st.info("Nessuna risposta per la Domanda 3.")
+    st.info("Nessuna risposta per le preoccupazioni/impatti.")
