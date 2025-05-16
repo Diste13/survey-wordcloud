@@ -26,43 +26,22 @@ app_css = """
   /* Nascondi header e sidebar default */
   header { visibility: hidden; }
   [data-testid="stHeader"],
-  [data-testid="stSidebar"] {
-    background-color: #00338D !important;
-  }
-  /* Variabili di tema */
-  :root {
-    --primary-color: #00338D;
-    --secondary-background-color: #00338D;
-    --primary-background-color: #00338D;
-  }
+  [data-testid="stSidebar"] { background-color: #00338D !important; }
+
   /* Top bar personalizzata */
   .top_bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100px;
-    background-color: #00338D;
-    display: flex;
-    align-items: center;
-    padding-left: 20px;
-    z-index: 9999;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100px;
+    background-color: #00338D; display: flex; align-items: center;
+    padding-left: 20px; z-index: 9999;
   }
   .top_bar img { height: 60px; }
+
   /* Spazio per il contenuto sotto la barra */
   [data-testid="stBlockContainer"] { padding-top: 100px; }
-  /* Styling survey form: rimuove bordo e box shadow, aggiunge margine tra domande, e imposta larghezza più ampia */
-  .stForm {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    width: 80% !important;
-    max-width: 900px !important;
-    margin: 0 auto 40px auto;
-  }
-  .stForm > div {
-    margin-bottom: 24px;
-  }
+
+  /* Rimuove bordo e box shadow dal form */
+  .stForm { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+  .stForm > div { margin-bottom: 24px; }
 </style>
 """
 st.markdown(app_css, unsafe_allow_html=True)
@@ -104,60 +83,63 @@ if not admin_mode and not survey_mode:
     st.info("Scannerizza o clicca.")
     st.stop()
 
-# --- Survey Page ---
+# --- Survey Page con colonne per larghezza ---
 if survey_mode and not admin_mode:
     st.title("Questionario AML")
-    with st.form("survey"):
-        st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
-        bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True)
+    # Usare colonne per centrare e allargare il form
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        with st.form("survey"):
+            st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
+            bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True)
 
-        st.write("## 2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
-        bm_nominee = st.radio("", [
-            "Amministratore Delegato",
-            "Altro membro esecutivo del Consiglio di Amministrazione",
-            "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
-            "Altro (specificare nelle note)",
-            "Non ancora definito"
-        ])
-        bm_notes = None
-        if bm_nominee == "Altro (specificare nelle note)":
-            bm_notes = st.text_area("Specifica qui nelle note:")
+            st.write("## 2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
+            bm_nominee = st.radio("", [
+                "Amministratore Delegato",
+                "Altro membro esecutivo del Consiglio di Amministrazione",
+                "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
+                "Altro (specificare nelle note)",
+                "Non ancora definito"
+            ])
+            bm_notes = None
+            if bm_nominee == "Altro (specificare nelle note)":
+                bm_notes = st.text_area("Specifica qui nelle note:")
 
-        st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
-        impacts = st.multiselect("", [
-            "Approccio della supervisione (nuove modalità di interazione)",
-            "Poco tempo per conformarsi",
-            "Implementazioni sui sistemi informatici",
-            "Impatti sull’AML Governance",
-            "Impatti su metodologie e modelli",
-            "Impatti sui processi di Know Your Customer",
-            "Altro (specificare nelle note)",
-            "Nessun impatto identificato al momento",
-            "Incertezza normativa e legame con locale",
-            "Misure per High-net-worth individuals",
-            "Estensione definizione PEPs",
-            "Requisiti titolarità effettiva",
-            "Aggiornamento adeguata verifica",
-            "Modifiche Paesi Terzi Alto Rischio",
-            "Targeted Financial sanctions",
-            "Limite al contante",
-            "Outsourcing",
-            "Misure amministrative e sanzioni",
-            "Impatti protezione dati",
-            "Sottoposizione normativa AML"
-        ], max_selections=3)
+            st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
+            impacts = st.multiselect("", [
+                "Approccio della supervisione (nuove modalità di interazione)",
+                "Poco tempo per conformarsi",
+                "Implementazioni sui sistemi informatici",
+                "Impatti sull’AML Governance",
+                "Impatti su metodologie e modelli",
+                "Impatti sui processi di Know Your Customer",
+                "Altro (specificare nelle note)",
+                "Nessun impatto identificato al momento",
+                "Incertezza normativa e legame con locale",
+                "Misure per High-net-worth individuals",
+                "Estensione definizione PEPs",
+                "Requisiti titolarità effettiva",
+                "Aggiornamento adeguata verifica",
+                "Modifiche Paesi Terzi Alto Rischio",
+                "Targeted Financial sanctions",
+                "Limite al contante",
+                "Outsourcing",
+                "Misure amministrative e sanzioni",
+                "Impatti protezione dati",
+                "Sottoposizione normativa AML"
+            ], max_selections=3)
 
-        submitted = st.form_submit_button("Invia")
-    if submitted:
-        record = {"bm_yes_no": bm_yes_no, "bm_nominee": bm_nominee, "bm_notes": bm_notes, "impacts": impacts}
-        ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
-        fname = f"responses/{ts}-{uuid4()}.json"
-        payload = json.dumps(record, ensure_ascii=False, indent=2)
-        try:
-            create_file_with_retry(repo, fname, "Nuova risposta AML", payload)
-            st.success("Risposte inviate")
-        except GithubException:
-            st.error("Errore nell'invio. Riprova più tardi.")
+            submitted = st.form_submit_button("Invia")
+        if submitted:
+            record = {"bm_yes_no": bm_yes_no, "bm_nominee": bm_nominee, "bm_notes": bm_notes, "impacts": impacts}
+            ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
+            fname = f"responses/{ts}-{uuid4()}.json"
+            payload = json.dumps(record, ensure_ascii=False, indent=2)
+            try:
+                create_file_with_retry(repo, fname, "Nuova risposta AML", payload)
+                st.success("Risposte inviate")
+            except GithubException:
+                st.error("Errore nell'invio. Riprova più tardi.")
     st.stop()
 
 # --- Admin Dashboard ---
