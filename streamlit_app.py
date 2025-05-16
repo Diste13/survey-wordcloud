@@ -12,35 +12,42 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-# --- 1) Leggi i query params PRIMA di qualsiasi chiamata Streamlit ---
-params      = st.experimental_get_query_params()
+# ----------------------------------------------------------------
+# 1) Imposta page_config PER PRIMO (layout wide di default)
+# ----------------------------------------------------------------
+st.set_page_config(
+    page_title="Questionario AML",
+    layout="wide"
+)
+
+# ----------------------------------------------------------------
+# 2) Leggi i query params SUBITO DOPO
+# ----------------------------------------------------------------
+params      = st.query_params
 survey_mode = params.get("survey", ["0"])[0] == "1"
 admin_mode  = params.get("admin",  ["0"])[0] == "1"
 
-# --- 2) Decidi il layout: wide per survey/admin, centered altrimenti ---
-layout = "wide" if (survey_mode or admin_mode) else "centered"
-
-# --- 3) Applica set_page_config DINAMICO come primissima cosa ---
-st.set_page_config(
-    page_title="Questionario AML",
-    layout=layout
-)
-
-# --- 4) Se non survey e non admin, applico CSS per centered narrow (QR page) ---
-#     (opzionale: puoi rimuovere se usi già 'centered' via layout)
-if not survey_mode:
+# ----------------------------------------------------------------
+# 3) Se siamo sulla QR page (né survey né admin), applichiamo CSS
+#    per una colonna centrata e stretta
+# ----------------------------------------------------------------
+if not survey_mode :
     st.markdown(
         """
         <style>
           [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
             max-width:700px !important;
+            margin-left:auto !important;
+            margin-right:auto !important;
           }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-# --- Carica logo e genera base64 ---
+# ----------------------------------------------------------------
+# 4) Carica logo e genera base64
+# ----------------------------------------------------------------
 try:
     with open("assets/immagine.png", "rb") as img_file:
         logo_data = img_file.read()
@@ -48,14 +55,9 @@ try:
 except FileNotFoundError:
     logo_b64 = None
 
-# --- CSS dinamico per form e per admin ---
-override_admin_css = """
-/* Restringi larghezza del container solo in admin */
-[data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
-  max-width: 700px !important;
-}
-""" if admin_mode else ""
-
+# ----------------------------------------------------------------
+# 5) CSS comune (form, top bar, ecc.)
+# ----------------------------------------------------------------
 app_css = f"""
 <style>
   /* Nascondi header e sidebar default */
@@ -93,21 +95,22 @@ app_css = f"""
     max-width:900px !important;
     width:90% !important;
   }}
-
-  /* --- OVERRIDE LARGHEZZA SOLO IN ADMIN --- */
-  {override_admin_css}
 </style>
 """
 st.markdown(app_css, unsafe_allow_html=True)
 
-# --- Disegna top bar con logo ---
+# ----------------------------------------------------------------
+# 6) Disegna top bar con logo
+# ----------------------------------------------------------------
 if logo_b64:
     st.markdown(
         f"<div class='top_bar'><img src='data:image/png;base64,{logo_b64}' alt='Logo' /></div>",
         unsafe_allow_html=True
     )
 
-# --- Inizializza GitHub ---
+# ----------------------------------------------------------------
+# 7) Inizializza GitHub
+# ----------------------------------------------------------------
 token     = st.secrets["github_token"]
 repo_name = st.secrets["repo_name"]
 app_url   = st.secrets["app_url"]
@@ -125,7 +128,9 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
             else:
                 raise
 
-# --- QR Page (landing) ---
+# ----------------------------------------------------------------
+# 8) QR Page (landing)
+# ----------------------------------------------------------------
 if not admin_mode and not survey_mode:
     st.title("Accedi al Questionario")
     qr = qrcode.make(f"{app_url}?survey=1")
@@ -135,7 +140,9 @@ if not admin_mode and not survey_mode:
     st.info("Scannerizza o clicca.")
     st.stop()
 
-# --- Survey Page ---
+# ----------------------------------------------------------------
+# 9) Survey Page
+# ----------------------------------------------------------------
 if survey_mode and not admin_mode:
     st.title("Questionario AML")
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
@@ -204,7 +211,9 @@ if survey_mode and not admin_mode:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- Admin Dashboard ---
+# ----------------------------------------------------------------
+# 10) Admin Dashboard
+# ----------------------------------------------------------------
 st.title("Dashboard Risposte AML")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
