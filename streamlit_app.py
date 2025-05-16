@@ -12,7 +12,7 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-# --- Inserimento CSS e HTML per top bar fissa ---
+# --- Inserimento CSS e HTML per top bar fissa e form styling ---
 # Carica logo e convertilo in base64
 try:
     with open("assets/immagine.png", "rb") as img_file:
@@ -48,36 +48,33 @@ app_css = """
     padding-left: 20px;
     z-index: 9999;
   }
-  .top_bar img {
-    height: 60px;
-  }
+  .top_bar img { height: 60px; }
   /* Spazio per il contenuto sotto la barra */
-  [data-testid="stBlockContainer"] {
-    padding-top: 100px;
+  [data-testid="stBlockContainer"] { padding-top: 100px; }
+  /* Styling survey form: rimuove bordo e box shadow, aggiunge margine tra domande */
+  .stForm {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .stForm > div {
+    margin-bottom: 20px;
   }
 </style>
 """
 st.markdown(app_css, unsafe_allow_html=True)
 
-# Disegna top_bar con logo e titolo
+# Disegna top_bar con logo
 if logo_b64:
-    top_html = f"""
-<div class="top_bar">
-  <img src="data:image/png;base64,{logo_b64}" alt="Logo" />
-</div>
-"""
-    st.markdown(top_html, unsafe_allow_html=True)
+    st.markdown(f"<div class='top_bar'><img src='data:image/png;base64,{logo_b64}' alt='Logo' /></div>", unsafe_allow_html=True)
 
-# --- 1) Carica secrets ---
+# --- Carica secrets e inizializza GitHub ---
 token     = st.secrets["github_token"]
 repo_name = st.secrets["repo_name"]
-app_url   = st.secrets["app_url"]  # es. "https://…streamlit.app"
-
-# --- 2) Inizializza GitHub ---
+app_url   = st.secrets["app_url"]
 g = Github(token)
 repo = g.get_repo(repo_name)
 
-# --- Helper: create_file con retry per conflitti 409/422 ---
 def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.5):
     for attempt in range(1, max_tries+1):
         try:
@@ -89,78 +86,66 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
             else:
                 raise
 
-# --- 3) Leggi query params ---
+# --- Gestione query params ---
 params      = st.query_params
 admin_mode  = params.get("admin", ["0"])[0] == "1"
 survey_mode = params.get("survey", ["0"])[0] == "1"
 
-# --- 4) Pagina QR ---
+# --- Pagina QR ---
 if not admin_mode and not survey_mode:
     st.title("Accedi al Questionario")
     qr = qrcode.make(f"{app_url}?survey=1")
-    buf = io.BytesIO()
-    qr.save(buf, format="PNG")
-    buf.seek(0)
+    buf = io.BytesIO(); qr.save(buf, format="PNG"); buf.seek(0)
     st.image(buf, caption="Scansiona per aprire il questionario", use_container_width=True)
     st.markdown(f"[Oppure clicca qui per il form]({app_url}?survey=1)")
     st.info("Scannerizza o clicca.")
     st.stop()
 
-# --- 5) Survey Page ---
+# --- Survey Page ---
 if survey_mode and not admin_mode:
     st.title("Questionario AML")
     with st.form("survey"):
-        bm_yes_no = st.radio(
-            "1) Si è già provveduto a nominare l’AML Board Member?", 
-            ["Sì", "No"]
-        )
-        bm_nominee = st.radio(
-            "2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?",
-            [
-                "Amministratore Delegato",
-                "Altro membro esecutivo del Consiglio di Amministrazione",
-                "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
-                "Altro (specificare nelle note)",
-                "Non ancora definito"
-            ]
-        )
-        # Campo note per domanda 2
+        st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
+        bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True)
+
+        st.write("## 2) Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
+        bm_nominee = st.radio("", [
+            "Amministratore Delegato",
+            "Altro membro esecutivo del Consiglio di Amministrazione",
+            "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
+            "Altro (specificare nelle note)",
+            "Non ancora definito"
+        ])
         bm_notes = None
         if bm_nominee == "Altro (specificare nelle note)":
-            bm_notes = st.text_area(
-                "2a) Selezionato 'Altro': specifica qui nelle note",
-                "",
-                help="Inserisci dettagli aggiuntivi per l'opzione 'Altro'."
-            )
-        impacts = st.multiselect(
-            "Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo che verrà definito nel contesto dell’AML Package? (selezionare fino a 3 opzioni)",
-            [
-                "Approccio della supervisione (supervisione diretta, nuove metodologie/ modalità di interazione con l’autorità, etc.)",
-                "Poco tempo per conformarsi alla grande quantità di normative attese",
-                "Implementazioni sui sistemi informatici legate alle novità normative",
-                "Impatti sull’AML Governance",
-                "Impatti su metodologie (e.g. Risk assessment) e modelli (e.g. profilatura, transaction monitoring)",
-                "Impatti sui processi di Know Your Customer",
-                "Altro (specificare nelle note)",
-                "Nessun impatto identificato al momento",
-                "Incertezza legata alla mancanza di chiarezza/ dettagli del nuovo quadro normativo e il suo legame con con la normativa locale non espressamente abrogata",
-                "Misure da applicare a High-net-worth individuals",
-                "Estensione della definizione di Politically Exposed Persons (PEPs)",
-                "Requisiti sulla titolarità effettiva",
-                "Aggiornamento dell’adeguata verifica (ogni anno per i clienti ad alto rischio e ogni cinque anni per clienti con profilo diverso da alto)",
-                "Modifiche nella Policy di individuazione dei Paesi Terzi ad Alto Rischio",
-                "Targeted Financial sanctions",
-                "Limite al contante",
-                "Outsourcing",
-                "Misure amministrative e sanzioni",
-                "Impatti sulla protezione e condivisione dei dati",
-                "Sottoposizione alla normativa AML come soggetti obbligati"
-            ],
-            max_selections=3
-        )
+            bm_notes = st.text_area("Specifica qui nelle note:")
+
+        st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
+        impacts = st.multiselect("", [
+            "Approccio della supervisione (nuove modalità di interazione)",
+            "Poco tempo per conformarsi",
+            "Implementazioni sui sistemi informatici",
+            "Impatti sull’AML Governance",
+            "Impatti su metodologie e modelli",
+            "Impatti sui processi di Know Your Customer",
+            "Altro (specificare nelle note)",
+            "Nessun impatto identificato al momento",
+            "Incertezza normativa e legame con locale",
+            "Misure per High-net-worth individuals",
+            "Estensione definizione PEPs",
+            "Requisiti titolarità effettiva",
+            "Aggiornamento adeguata verifica",
+            "Modifiche Paesi Terzi Alto Rischio",
+            "Targeted Financial sanctions",
+            "Limite al contante",
+            "Outsourcing",
+            "Misure amministrative e sanzioni",
+            "Impatti protezione dati",
+            "Sottoposizione normativa AML"
+        ], max_selections=3)
+
         submitted = st.form_submit_button("Invia")
     if submitted:
-        st.info("Attendere…")
         record = {"bm_yes_no": bm_yes_no, "bm_nominee": bm_nominee, "bm_notes": bm_notes, "impacts": impacts}
         ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
         fname = f"responses/{ts}-{uuid4()}.json"
@@ -172,12 +157,11 @@ if survey_mode and not admin_mode:
             st.error("Errore nell'invio. Riprova più tardi.")
     st.stop()
 
-# --- 6) Admin Dashboard ---
+# --- Admin Dashboard ---
 st.title("Dashboard Risposte AML")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
-# Carica risposte
 try:
     files = repo.get_contents("responses")
     data = [json.loads(repo.get_contents(f.path).decoded_content) for f in files]
@@ -185,13 +169,11 @@ except GithubException:
     st.info("Ancora nessuna risposta.")
     st.stop()
 
-# Palette wordcloud
 palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#FD349C"]
 
 def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
     return random.choice(palette)
 
-# Istogrammi BM Yes/No e Nominee
 for q_key, title, labels in [
     ("bm_yes_no", "1) AML Board Member nominato?", "Risposta"),
     ("bm_nominee", "2) Chi come AML Board Member?", "Soggetto")
@@ -210,7 +192,6 @@ for q_key, title, labels in [
         st.info(f"Nessuna risposta per la domanda {q_key}.")
     st.write("---")
 
-# Mostra anche note se presenti
 notes_list = [r.get("bm_notes") for r in data if r.get("bm_notes")]
 if notes_list:
     st.subheader("Note AML Board Member")
@@ -218,7 +199,6 @@ if notes_list:
         st.write(f"- {note}")
     st.write("---")
 
-# Wordcloud Impacts
 freqs = {}
 for r in data:
     for choice in r.get("impacts", []):
