@@ -12,26 +12,28 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-# --- 1) PRIMO: setta configurazione pagina WIDE di default ---
-st.set_page_config(
-    page_title="Questionario AML",
-    layout="wide"
-)
-
-# --- 2) Leggi i query params SUBITO DOPO ---
-params      = st.query_params
+# --- 1) Leggi i query params PRIMA di qualsiasi chiamata Streamlit ---
+params      = st.experimental_get_query_params()
 survey_mode = params.get("survey", ["0"])[0] == "1"
 admin_mode  = params.get("admin",  ["0"])[0] == "1"
 
-# --- 3) Se non survey e non admin, applico CSS per centered narrow (QR page) ---
-if not survey_mode and not admin_mode:
+# --- 2) Decidi il layout: wide per survey/admin, centered altrimenti ---
+layout = "wide" if (survey_mode or admin_mode) else "centered"
+
+# --- 3) Applica set_page_config DINAMICO come primissima cosa ---
+st.set_page_config(
+    page_title="Questionario AML",
+    layout=layout
+)
+
+# --- 4) Se non survey e non admin, applico CSS per centered narrow (QR page) ---
+#     (opzionale: puoi rimuovere se usi già 'centered' via layout)
+if not survey_mode:
     st.markdown(
         """
         <style>
           [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
             max-width:700px !important;
-            margin-left:auto !important;
-            margin-right:auto !important;
           }
         </style>
         """,
@@ -51,8 +53,6 @@ override_admin_css = """
 /* Restringi larghezza del container solo in admin */
 [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
   max-width: 700px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
 }
 """ if admin_mode else ""
 
