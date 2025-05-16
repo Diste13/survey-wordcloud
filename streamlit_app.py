@@ -107,8 +107,11 @@ app_css = f"""
     width:90% !important;
   }}
 
-  /* workaround: nasconde la prima voce "" per ogni st.radio in .form-container */
+  /* Workaround: rimuove completamente la prima voce radio (vuota) */
   .form-container [data-testid="stRadio"] > div > div > div:nth-child(1) {{
+    display: none !important;
+  }}
+  .form-container [data-testid="stRadio"] > div > div > div:nth-child(1) * {{
     display: none !important;
   }}
 </style>
@@ -183,22 +186,22 @@ if survey_mode and not admin_mode:
     with st.form("survey"):
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
         bm_yes_no = st.radio(
-            "", 
-            ["", "Sì", "No"], 
-            horizontal=True, 
+            "",
+            ["", "Sì", "No"],
+            horizontal=True,
             label_visibility="collapsed"
         )
 
         st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
-            "", 
+            "",
             [
-              "",
-              "Amministratore Delegato",
-              "Altro membro esecutivo del Consiglio di Amministrazione",
-              "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
-              "Altro (specificare nelle note)",
-              "Non ancora definito"
+                "",
+                "Amministratore Delegato",
+                "Altro membro esecutivo del Consiglio di Amministrazione",
+                "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
+                "Altro (specificare nelle note)",
+                "Non ancora definito"
             ],
             label_visibility="collapsed"
         )
@@ -208,7 +211,8 @@ if survey_mode and not admin_mode:
 
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
         impacts = st.multiselect(
-            "", [
+            "",
+            [
                 "Approccio della supervisione (nuove modalità di interazione)",
                 "Poco tempo per conformarsi",
                 "Implementazioni sui sistemi informatici",
@@ -230,7 +234,7 @@ if survey_mode and not admin_mode:
                 "Impatti protezione dati",
                 "Sottoposizione normativa AML"
             ],
-            max_selections=3, 
+            max_selections=3,
             label_visibility="collapsed"
         )
 
