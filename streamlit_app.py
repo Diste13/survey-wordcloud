@@ -277,9 +277,11 @@ for q_key, title, labels in [
 ]:
     counts = {}
     for r in data:
-        ans = r.get(q_key, "").strip()
+        # se r.get(q_key) è None, lo sostituiamo con stringa vuota prima di strip()
+        ans = (r.get(q_key) or "").strip()
         if ans:
             counts[ans] = counts.get(ans, 0) + 1
+
     if counts:
         df = {labels: list(counts.keys()), "Conteggio": list(counts.values())}
         fig = px.bar(df, x=labels, y="Conteggio")
