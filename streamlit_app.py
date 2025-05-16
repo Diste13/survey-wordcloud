@@ -184,7 +184,8 @@ if survey_mode and not admin_mode:
             "",
             ["Sì", "No"],
             horizontal=True,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index= None
         )
 
         # — Domanda 2 senza opzione vuota e senza default pre-selezionato —
@@ -198,7 +199,8 @@ if survey_mode and not admin_mode:
                 "Altro (specificare nelle note)",
                 "Non ancora definito"
             ],
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index=None
         )
         bm_notes = None
         if bm_nominee.startswith("Altro"):
