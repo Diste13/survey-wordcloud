@@ -41,18 +41,25 @@ app_css = """
   .top_bar img { height: 60px; }
   /* Spazio per il contenuto sotto la barra */
   [data-testid="stBlockContainer"] { padding-top: 100px; }
-  /* Wrapper personalizzato per il form */
+
+  /* Wrapper personalizzato per il form (survey only) */
   .form-container {
     max-width: 900px !important;
     width: 90% !important;
     margin: 0 auto 40px auto;
   }
-  /* Rimuove sfondo, bordo e box-shadow interno del form */
+  /* Rimuove sfondo, bordo e box-shadow del form wrapper */
   .form-container form {
     background: none !important;
     border: none !important;
     box-shadow: none !important;
     width: 100% !important;
+  }
+  /* Rimuove sfondo e bordo anche dai singoli blocchi del form */
+  .form-container .stForm > div {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
   }
   /* Allarga i singoli widget dentro il form */
   .form-container [data-testid="stRadio"],
@@ -79,7 +86,6 @@ g = Github(token)
 repo = g.get_repo(repo_name)
 
 # Funzione di retry per GitHub
-
 def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.5):
     for attempt in range(1, max_tries+1):
         try:
