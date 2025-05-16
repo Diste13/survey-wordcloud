@@ -12,10 +12,16 @@ import plotly.express as px
 from uuid import uuid4
 from wordcloud import WordCloud
 
-# --- Configurazione pagina ---
-st.set_page_config(page_title="Questionario AML", layout="wide")
+# --- Leggi i query params PRIMA di set_page_config ---
+params      = st.experimental_get_query_params()
+admin_mode  = params.get("admin", ["0"])[0] == "1"
+survey_mode = params.get("survey", ["0"])[0] == "1"
 
-# --- Inserimento CSS e HTML per top bar fissa e form styling ---
+# --- Configurazione pagina con layout dinamico ---
+layout = "wide" if survey_mode else "centered"
+st.set_page_config(page_title="Questionario AML", layout=layout)
+
+# --- Carica logo e genera base64 ---
 try:
     with open("assets/immagine.png", "rb") as img_file:
         logo_data = img_file.read()
@@ -23,55 +29,64 @@ try:
 except FileNotFoundError:
     logo_b64 = None
 
-app_css = """
+# --- CSS dinamico ---
+override_admin_css = """
+.reportview-container .main .block-container {
+  max-width: 700px;  /* Larghezza massima in admin */
+  margin: 0 auto;
+}
+""" if admin_mode else ""
+
+app_css = f"""
 <style>
   /* Nascondi header e sidebar default */
-  header { visibility: hidden; }
-  [data-testid="stHeader"], [data-testid="stSidebar"] {
+  header {{ visibility: hidden; }}
+  [data-testid="stHeader"], [data-testid="stSidebar"] {{
     background-color: #00338D !important;
-  }
+  }}
+
   /* Top bar personalizzata */
-  .top_bar {
+  .top_bar {{
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100px;
     background-color: #00338D;
     display: flex; align-items: center; padding-left: 20px;
     z-index: 9999;
-  }
-  .top_bar img { height: 60px; }
-  /* Spazio per il contenuto sotto la barra */
-  [data-testid="stBlockContainer"] { padding-top: 100px; }
+  }}
+  .top_bar img {{ height: 60px; }}
 
-  /* Wrapper personalizzato per il form (survey only) */
-  .form-container {
+  /* Spazio per il contenuto sotto la barra */
+  [data-testid="stBlockContainer"] {{ padding-top: 100px; }}
+
+  /* ---- STILI FORM (survey) ---- */
+  .form-container {{
     max-width: 900px !important;
     width: 90% !important;
     margin: 0 auto 40px auto;
-  }
-  /* Rimuove sfondo, bordo e box-shadow del form wrapper */
-  .form-container form {
+  }}
+  /* Rimuove sfondo, bordo e box-shadow da tutto il form */
+  .form-container form[role="form"],
+  .form-container form[role="form"] > div,
+  .form-container form[role="form"] > div > div {{
     background: none !important;
     border: none !important;
     box-shadow: none !important;
-    width: 100% !important;
-  }
-  /* Rimuove sfondo e bordo anche dai singoli blocchi del form */
-  .form-container .stForm > div {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-  /* Allarga i singoli widget dentro il form */
+  }}
+
+  /* Allarga i widget dentro il form */
   .form-container [data-testid="stRadio"],
-  .form-container [data-testid="stMultiselect"] {
+  .form-container [data-testid="stMultiselect"] {{
     max-width: 900px !important;
     width: 90% !important;
-  }
+  }}
+
+  /* ---- OVERRIDE LARGHEZZA SOLO PER ADMIN ---- */
+  {override_admin_css}
 </style>
 """
 st.markdown(app_css, unsafe_allow_html=True)
 
-# Disegna top bar con logo
+# --- Disegna top bar con logo ---
 if logo_b64:
     st.markdown(
         f"<div class='top_bar'><img src='data:image/png;base64,{logo_b64}' alt='Logo' /></div>",
@@ -97,10 +112,10 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
             else:
                 raise
 
-# --- Gestione query params ---
-params      = st.query_params
-admin_mode  = params.get("admin", ["0"])[0] == "1"
-survey_mode = params.get("survey", ["0"])[0] == "1"
+# --- Gestione query params (di nuovo, per coerenza) ---
+# (già letti sopra in params, qui li riusiamo)
+admin_mode  = admin_mode
+survey_mode = survey_mode
 
 # --- Pagina QR ---
 if not admin_mode and not survey_mode:
@@ -163,7 +178,12 @@ if survey_mode and not admin_mode:
         submitted = st.form_submit_button("Invia")
         if submitted:
             st.info("Attendere…")
-            record = {"bm_yes_no": bm_yes_no, "bm_nominee": bm_nominee, "bm_notes": bm_notes, "impacts": impacts}
+            record = {
+                "bm_yes_no": bm_yes_no,
+                "bm_nominee": bm_nominee,
+                "bm_notes": bm_notes,
+                "impacts": impacts
+            }
             ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
             fname = f"responses/{ts}-{uuid4()}.json"
             payload = json.dumps(record, ensure_ascii=False, indent=2)
@@ -234,3 +254,4 @@ if freqs:
     st.pyplot(fig, use_container_width=True)
 else:
     st.info("Nessuna risposta per le preoccupazioni/impatti.")
+
