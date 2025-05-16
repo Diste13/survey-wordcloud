@@ -16,7 +16,7 @@ from wordcloud import WordCloud
 # 1) Imposta page_config PER PRIMO (layout wide di default)
 # ----------------------------------------------------------------
 st.set_page_config(
-    page_title="Questionario AML",
+    page_title="EU AML Package",
     layout="wide"
 )
 
@@ -31,11 +31,11 @@ admin_mode  = params.get("admin",  ["0"])[0] == "1"
 # 3) Se siamo sulla QR page (né survey né admin), applichiamo CSS
 #    per una colonna centrata e stretta
 # ----------------------------------------------------------------
-if not survey_mode :
+if not survey_mode and not admin_mode:
     st.markdown(
         """
         <style>
-          [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
+          [data-testid=\"stAppViewContainer\"] [data-testid=\"stBlockContainer\"] {
             max-width:700px !important;
             margin-left:auto !important;
             margin-right:auto !important;
@@ -56,13 +56,23 @@ except FileNotFoundError:
     logo_b64 = None
 
 # ----------------------------------------------------------------
+# 4b) Carica secondo logo (Acorà) e genera base64
+# ----------------------------------------------------------------
+try:
+    with open("assets/acorà logo.png", "rb") as img_file2:
+        logo2_data = img_file2.read()
+    logo2_b64 = base64.b64encode(logo2_data).decode()
+except FileNotFoundError:
+    logo2_b64 = None
+
+# ----------------------------------------------------------------
 # 5) CSS comune (form, top bar, ecc.)
 # ----------------------------------------------------------------
 app_css = f"""
 <style>
   /* Nascondi header e sidebar default */
   header {{ visibility: hidden; }}
-  [data-testid="stHeader"], [data-testid="stSidebar"] {{
+  [data-testid=\"stHeader\"], [data-testid=\"stSidebar\"] {{
     background-color: #00338D !important;
   }}
 
@@ -75,7 +85,7 @@ app_css = f"""
   .top_bar img {{ height:60px; }}
 
   /* Spazio per il contenuto sotto la barra */
-  [data-testid="stBlockContainer"] {{ padding-top:100px; }}
+  [data-testid=\"stBlockContainer\"] {{ padding-top:100px; }}
 
   /* --- STILI FORM (survey) --- */
   .form-container {{
@@ -83,15 +93,15 @@ app_css = f"""
     width:90% !important;
     margin:0 auto 40px auto;
   }}
-  .form-container form[role="form"],
-  .form-container form[role="form"] > div,
-  .form-container form[role="form"] > div > div {{
+  .form-container form[role=\"form\"],
+  .form-container form[role=\"form\"] > div,
+  .form-container form[role=\"form\"] > div > div {{
     background:none !important;
     border:none !important;
     box-shadow:none !important;
   }}
-  .form-container [data-testid="stRadio"],
-  .form-container [data-testid="stMultiselect"] {{
+  .form-container [data-testid=\"stRadio\"],
+  .form-container [data-testid=\"stMultiselect\"] {{
     max-width:900px !important;
     width:90% !important;
   }}
@@ -100,11 +110,16 @@ app_css = f"""
 st.markdown(app_css, unsafe_allow_html=True)
 
 # ----------------------------------------------------------------
-# 6) Disegna top bar con logo
+# 6) Disegna top bar con loghi
 # ----------------------------------------------------------------
-if logo_b64:
+if logo_b64 or logo2_b64:
+    imgs_html = ""
+    if logo_b64:
+        imgs_html += f"<img src='data:image/png;base64,{logo_b64}' alt='Logo' />"
+    if logo2_b64:
+        imgs_html += f"<img src='data:image/png;base64,{logo2_b64}' alt='Acorà Logo' style='margin-left:20px;' />"
     st.markdown(
-        f"<div class='top_bar'><img src='data:image/png;base64,{logo_b64}' alt='Logo' /></div>",
+        f"<div class='top_bar'>{imgs_html}</div>",
         unsafe_allow_html=True
     )
 
@@ -132,7 +147,7 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
 # 8) QR Page (landing)
 # ----------------------------------------------------------------
 if not admin_mode and not survey_mode:
-    st.title("Accedi al Questionario")
+    st.title("EU AML Package")
 
     # Genera il QR code
     qr = qrcode.make(f"{app_url}?survey=1")
@@ -140,26 +155,20 @@ if not admin_mode and not survey_mode:
     qr.save(buf, format="PNG")
     buf.seek(0)
 
-    # Centra il QR usando 3 colonne (sinistra/destra flessibili, QR al centro)
+    # Centra il QR usando 3 colonne
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image(
-            buf,
-            caption="Scansiona per aprire il questionario",
-            width=800
-        )
+        st.image(buf, caption="Scansiona per aprire il questionario", width=800)
 
-    # Link alternativo e istruzioni
     st.markdown(f"[Oppure clicca qui per il form]({app_url}?survey=1)")
     st.info("Scannerizza o clicca.")
     st.stop()
-
 
 # ----------------------------------------------------------------
 # 9) Survey Page
 # ----------------------------------------------------------------
 if survey_mode and not admin_mode:
-    st.title("Questionario AML")
+    st.title("EU AML Package")
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
@@ -219,7 +228,7 @@ if survey_mode and not admin_mode:
             fname = f"responses/{ts}-{uuid4()}.json"
             payload = json.dumps(record, ensure_ascii=False, indent=2)
             try:
-                create_file_with_retry(repo, fname, "Nuova risposta AML", payload)
+                create_file_with_retry(repo, fname, "Nuova risposta EU AML Package", payload)
                 st.success("Risposte inviate")
             except GithubException:
                 st.error("Errore nell'invio. Riprova più tardi.")
@@ -229,7 +238,7 @@ if survey_mode and not admin_mode:
 # ----------------------------------------------------------------
 # 10) Admin Dashboard
 # ----------------------------------------------------------------
-st.title("Dashboard Risposte AML")
+st.title("EU AML Package")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
@@ -246,8 +255,8 @@ def random_color(word, font_size, position, orientation, random_state=None, **kw
 
 # Istogrammi domande 1 e 2
 for q_key, title, labels in [
-    ("bm_yes_no", "1) AML Board Member nominato?", "Risposta"),
-    ("bm_nominee", "2) Chi come AML Board Member?", "Soggetto")
+    ("bm_yes_no", "1) EU AML Package - AML Board Member nominato?", "Risposta"),
+    ("bm_nominee", "2) EU AML Package - Chi come AML Board Member?", "Soggetto")
 ]:
     counts = {}
     for r in data:
@@ -266,7 +275,7 @@ for q_key, title, labels in [
 # Note extra per 'Altro'
 notes_list = [r.get("bm_notes") for r in data if r.get("bm_notes")]
 if notes_list:
-    st.subheader("Note AML Board Member")
+    st.subheader("Note EU AML Package - AML Board Member")
     for note in notes_list:
         st.write(f"- {note}")
     st.write("---")
@@ -282,7 +291,7 @@ if freqs:
     fig, ax = plt.subplots(figsize=(8, 4), dpi=200)
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
-    st.subheader("Principali preoccupazioni ed impatti - AML Package")
+    st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
     st.pyplot(fig, use_container_width=True)
 else:
     st.info("Nessuna risposta per le preoccupazioni/impatti.")
