@@ -8,8 +8,8 @@ import traceback
 init_db()
 
 # 2) Connetti a GitHub
-g = Github('g')
-repo = g.get_repo('r')
+g = Github(g)
+repo = g.get_repo(r)
 
 # 3) Recupera la lista di file JSON
 files = repo.get_contents("responses")
