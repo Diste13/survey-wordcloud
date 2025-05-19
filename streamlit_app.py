@@ -1,35 +1,39 @@
 import streamlit as st
-import time
-from github import Github, GithubException
-import json
-import random
 from datetime import datetime
-import qrcode
-import io
-import base64
-import matplotlib.pyplot as plt
-import plotly.express as px
 from uuid import uuid4
+import base64
+import io
+import qrcode
+import random
+from collections import Counter
+import plotly.express as px
 from wordcloud import WordCloud
 
 # ----------------------------------------------------------------
-# 1) Imposta page_config PER PRIMO (layout wide di default)
+# Database setup
+# ----------------------------------------------------------------
+import db
+from db import SessionLocal, Response
+
+# ----------------------------------------------------------------
+# 1) Page config and DB init
 # ----------------------------------------------------------------
 st.set_page_config(
     page_title="EU AML Package",
     layout="wide"
 )
+# Initialize SQLite database (creates file and tables if needed)
+db.init_db()
 
 # ----------------------------------------------------------------
-# 2) Leggi i query params SUBITO DOPO
+# 2) Read query params
 # ----------------------------------------------------------------
 params      = st.query_params
 survey_mode = params.get("survey", ["0"])[0] == "1"
 admin_mode  = params.get("admin",  ["0"])[0] == "1"
 
 # ----------------------------------------------------------------
-# 3) Se siamo sulla QR page (né survey né admin), applichiamo CSS
-#    per una colonna centrata e stretta
+# 3) CSS for QR landing page
 # ----------------------------------------------------------------
 if not survey_mode and not admin_mode:
     st.markdown(
@@ -46,168 +50,133 @@ if not survey_mode and not admin_mode:
     )
 
 # ----------------------------------------------------------------
-# 4) Carica logo e genera base64
-# ----------------------------------------------------------------
-try:
-    with open("assets/immagine.png", "rb") as img_file:
-        logo_data = img_file.read()
-    logo_b64 = base64.b64encode(logo_data).decode()
-except FileNotFoundError:
-    logo_b64 = None
-
-# ----------------------------------------------------------------
-# 4b) Carica secondo logo (Acorà) e genera base64
-# ----------------------------------------------------------------
-try:
-    with open("assets/acorà logo.png", "rb") as img_file2:
-        logo2_data = img_file2.read()
-    logo2_b64 = base64.b64encode(logo2_data).decode()
-except FileNotFoundError:
-    logo2_b64 = None
-
-# ----------------------------------------------------------------
-# 5) CSS comune (form, top bar, ecc.)
+# 4) Common CSS (top bar, form styles)
 # ----------------------------------------------------------------
 app_css = f"""
 <style>
-  /* Nascondi header e sidebar default */
+  /* Hide default header and sidebar */
   header {{ visibility: hidden; }}
-  [data-testid="stHeader"], [data-testid="stSidebar"] {{
-    background-color: #00338D !important;
-  }}
+  [data-testid="stHeader"], [data-testid="stSidebar"] {{ background-color: #00338D !important; }}
 
-  /* Top bar personalizzata */
+  /* Top bar */
   .top_bar {{
-    position: fixed; top:0; left:0; width:100vw; height:100px;
-    background-color:#00338D; display:flex; align-items:center; padding-left:20px;
-    z-index:9999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100px;
+    background-color: #00338D;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    z-index: 9999;
   }}
-  .top_bar img {{ height:60px; }}
-  .logo-acora {{ height:40px !important; }}
+  .top_bar img {{ height: 60px; }}
+  .logo-acora {{ height: 40px !important; margin-left:20px; }}
 
-  /* Spazio per il contenuto sotto la barra */
-  [data-testid="stBlockContainer"] {{ padding-top:100px; }}
+  /* Space below top bar */
+  [data-testid="stBlockContainer"] {{ padding-top: 100px; }}
 
-  /* STILI FORM (survey) */
+  /* Survey form styles */
   .form-container {{
-    max-width:900px !important;
-    width:90% !important;
-    margin:0 auto 40px auto;
+    max-width: 900px !important;
+    width: 90% !important;
+    margin: 0 auto 40px auto;
   }}
   .form-container form[role="form"],
   .form-container form[role="form"] > div,
   .form-container form[role="form"] > div > div {{
-    background:none !important;
-    border:none !important;
-    box-shadow:none !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
   }}
   .form-container [data-testid="stRadio"],
   .form-container [data-testid="stMultiselect"] {{
-    max-width:900px !important;
-    width:90% !important;
+    max-width: 900px !important;
+    width: 90% !important;
   }}
 </style>
 """
 st.markdown(app_css, unsafe_allow_html=True)
 
 # ----------------------------------------------------------------
-# 6) Disegna top bar con loghi
+# 5) Top bar logos
 # ----------------------------------------------------------------
+logo_b64 = None
+logo2_b64 = None
+for asset, var_name in [("assets/immagine.png", "logo_b64"),
+                        ("assets/acorà logo.png", "logo2_b64")]:
+    try:
+        with open(asset, "rb") as f:
+            data = f.read()
+        b64 = base64.b64encode(data).decode()
+        if var_name == "logo_b64":
+            logo_b64 = b64
+        else:
+            logo2_b64 = b64
+    except FileNotFoundError:
+        pass
+
 if logo_b64 or logo2_b64:
     imgs_html = ""
     if logo_b64:
-        imgs_html += f"<img src='data:image/png;base64,{logo_b64}' alt='Logo' />"
+        imgs_html += f"<img src='data:image/png;base64,{logo_b64}' alt='Logo'/>"
     if logo2_b64:
-        imgs_html += (
-            f"<img class='logo-acora' "
-            f"src='data:image/png;base64,{logo2_b64}' "
-            f"alt='Acorà Logo' style='margin-left:20px;' />"
-        )
-    st.markdown(
-        f"<div class='top_bar'>{imgs_html}</div>",
-        unsafe_allow_html=True
-    )
+        imgs_html += f"<img class='logo-acora' src='data:image/png;base64,{logo2_b64}' alt='Acorà Logo'/>"
+    st.markdown(f"<div class='top_bar'>{imgs_html}</div>", unsafe_allow_html=True)
 
 # ----------------------------------------------------------------
-# 7) Inizializza GitHub
+# 6) QR Landing Page
 # ----------------------------------------------------------------
-token     = st.secrets["github_token"]
-repo_name = st.secrets["repo_name"]
-app_url   = st.secrets["app_url"]
-g = Github(token)
-repo = g.get_repo(repo_name)
-
-def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.5):
-    for attempt in range(1, max_tries+1):
-        try:
-            return repo.create_file(path, message, content)
-        except GithubException as e:
-            if e.status in (409, 422) and attempt < max_tries:
-                time.sleep(backoff * attempt)
-                continue
-            else:
-                raise
-
-# ----------------------------------------------------------------
-# 8) QR Page (landing)
-# ----------------------------------------------------------------
-if not admin_mode and not survey_mode:
+app_url = st.secrets.get("app_url", "")
+if not survey_mode and not admin_mode:
     st.title("EU AML Package")
-
-    # Genera il QR code
-    qr = qrcode.make(f"{app_url}?survey=1")
+    survey_url = f"{app_url}?survey=1"
+    # Generate QR
+    qr = qrcode.make(survey_url)
     buf = io.BytesIO()
     qr.save(buf, format="PNG")
     buf.seek(0)
-
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1,2,1])
     with col2:
         st.image(buf, caption="Scansiona per aprire il questionario", width=800)
-
-    survey_url = f"{app_url}?survey=1"
     st.markdown(f"[Oppure clicca qui per il form]({survey_url})")
     st.info(survey_url)
     st.stop()
 
 # ----------------------------------------------------------------
-# 9) Survey Page
+# 7) Survey Page
 # ----------------------------------------------------------------
 if survey_mode and not admin_mode:
     st.title("EU AML Package")
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
-        # — Domanda 1 senza opzione vuota e senza default pre-selezionato —
+        # Question 1
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
         bm_yes_no = st.radio(
-            " ",  # non-empty label per evitare warning
-            ["Sì", "No"],
-            horizontal=True,
-            label_visibility="collapsed",
-            index=None
+            label=" ",
+            options=["Sì", "No"],
+            horizontal=True
         )
-
-        # — Domanda 2 senza opzione vuota e senza default pre-selezionato —
+        # Question 2
         st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
-            " ",  # non-empty label per evitare warning
-            [
+            label=" ",
+            options=[
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                 "Non ancora definito"
-            ],
-            label_visibility="collapsed",
-            index=None
+            ]
         )
         bm_notes = None
-        if bm_nominee is not None and bm_nominee.startswith("Altro"):
+        if bm_nominee.startswith("Altro"):
             bm_notes = st.text_area("Specifica qui nelle note:")
-
-        # — Domanda 3 invariata —
+        # Question 3
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
         impacts = st.multiselect(
-            " ",  # non-empty label per evitare warning
-            [
+            label=" ",
+            options=[
                 "Approccio della supervisione (nuove modalità di interazione)",
                 "Poco tempo per conformarsi",
                 "Implementazioni sui sistemi informatici",
@@ -228,100 +197,102 @@ if survey_mode and not admin_mode:
                 "Impatti protezione dati",
                 "Sottoposizione normativa AML"
             ],
-            max_selections=3,
-            label_visibility="collapsed"
+            max_selections=3
         )
-
+        # Submit
         if st.form_submit_button("Invia"):
-            st.info("Attendere…")
-            record = {
-                "bm_yes_no": bm_yes_no,
-                "bm_nominee": bm_nominee,
-                "bm_notes": bm_notes,
-                "impacts": impacts
-            }
-            ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
-            fname = f"responses/{ts}-{uuid4()}.json"
-            payload = json.dumps(record, ensure_ascii=False, indent=2)
+            session = SessionLocal()
             try:
-                create_file_with_retry(repo, fname, "Nuova risposta EU AML Package", payload)
+                resp = Response(
+                    bm_yes_no=bm_yes_no,
+                    bm_nominee=bm_nominee,
+                    bm_notes=bm_notes,
+                    impacts=impacts
+                )
+                session.add(resp)
+                session.commit()
                 st.success("Risposte inviate")
-            except GithubException:
-                st.error("Errore nell'invio. Riprova più tardi.")
-
+            except Exception as e:
+                session.rollback()
+                st.error(f"Errore nell'invio: {e}")
+            finally:
+                session.close()
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ----------------------------------------------------------------
-# 10) Admin Dashboard
+# 8) Admin Dashboard
 # ----------------------------------------------------------------
-st.title("EU AML Package")
+st.title("EU AML Package - Admin")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
-try:
-    files = repo.get_contents("responses")
-    data = [json.loads(repo.get_contents(f.path).decoded_content) for f in files]
-except GithubException:
+@st.cache_data(ttl=300)
+def load_responses():
+    session = SessionLocal()
+    try:
+        rows = session.query(Response).order_by(Response.timestamp).all()
+        return [
+            {"bm_yes_no": r.bm_yes_no,
+             "bm_nominee": r.bm_nominee,
+             "bm_notes": r.bm_notes,
+             "impacts":   r.impacts}
+            for r in rows
+        ]
+    finally:
+        session.close()
+
+# Load data
+data = load_responses()
+if not data:
     st.info("Ancora nessuna risposta.")
     st.stop()
 
-palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#FD349C"]
-def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
-    return random.choice(palette)
-
-# Istogrammi domande 1 e 2
-for q_key, title, labels in [
+# ----------------------------------------------------------------
+# 9) Charts for Q1 & Q2
+# ----------------------------------------------------------------
+for q_key, title, label in [
     ("bm_yes_no", "1) EU AML Package - AML Board Member nominato?", "Risposta"),
     ("bm_nominee", "2) EU AML Package - Chi come AML Board Member?", "Soggetto")
 ]:
-    counts = {}
-    for r in data:
-        # se r.get(q_key) è None, lo sostituiamo con stringa vuota prima di strip()
-        ans = (r.get(q_key) or "").strip()
-        if ans:
-            counts[ans] = counts.get(ans, 0) + 1
-
+    counts = Counter(r[q_key] for r in data if r[q_key])
     if counts:
-        df = {labels: list(counts.keys()), "Conteggio": list(counts.values())}
-        fig = px.bar(df, x=labels, y="Conteggio")
+        df = {label: list(counts.keys()), "Conteggio": list(counts.values())}
+        fig = px.bar(df, x=label, y="Conteggio")
         st.subheader(title)
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info(f"Nessuna risposta per la domanda {q_key}.")
     st.write("---")
 
-# Note extra per 'Altro'
-notes_list = [r.get("bm_notes") for r in data if r.get("bm_notes")]
+# ----------------------------------------------------------------
+# 10) Notes for 'Altro'
+# ----------------------------------------------------------------
+notes_list = [r["bm_notes"] for r in data if r.get("bm_notes")]
 if notes_list:
     st.subheader("Note EU AML Package - AML Board Member")
     for note in notes_list:
         st.write(f"- {note}")
     st.write("---")
 
-# — WordCloud Q3 ad alta definizione —
-freqs = {}
-for r in data:
-    for choice in r.get("impacts", []):
-        freqs[choice] = freqs.get(choice, 0) + 1
-
+# ----------------------------------------------------------------
+# 11) WordCloud for Q3
+# ----------------------------------------------------------------
+freqs = Counter(choice for r in data for choice in r.get("impacts", []))
 if freqs:
-    # 1) Genera il wordcloud con dimensioni maggiori
+    palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#FD349C"]
+    def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
+        return random.choice(palette)
+
     wc = WordCloud(
-        width=1600,      # prima era 800
-        height=800, 
-        scale=4,# prima era 400
+        width=1600,
+        height=800,
+        scale=4,
         background_color="white",
         color_func=random_color
-    )
-    wc.generate_from_frequencies(freqs)
-
-    # 2) Prendi l'immagine PIL e mostrala direttamente
-    img = wc.to_image()
+    ).generate_from_frequencies(freqs)
 
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
-    # con use_column_width la Streamlit ridimensiona in modo più pulito
-    st.image(img, use_container_width =True)
+    st.image(wc.to_image(), use_column_width=True)
 else:
     st.info("Nessuna risposta per le preoccupazioni/impatti.")
-
