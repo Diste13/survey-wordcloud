@@ -9,6 +9,8 @@ from collections import Counter
 import plotly.express as px
 from wordcloud import WordCloud
 import json
+from github import Github, GithubException
+import time
 # ----------------------------------------------------------------
 # Database setup
 # ----------------------------------------------------------------
@@ -24,6 +26,23 @@ st.set_page_config(
 )
 # Initialize SQLite database (creates file and tables if needed)
 db.init_db()
+
+token     = st.secrets["github_token"]
+repo_name = st.secrets["repo_name"]
+app_url   = st.secrets["app_url"]
+g = Github(token)
+repo = g.get_repo(repo_name)
+
+def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.5):
+    for attempt in range(1, max_tries+1):
+        try:
+            return repo.create_file(path, message, content)
+        except GithubException as e:
+            if e.status in (409, 422) and attempt < max_tries:
+                time.sleep(backoff * attempt)
+                continue
+            else:
+                raise
 
 # ----------------------------------------------------------------
 # 2) Read query params
