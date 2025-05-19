@@ -151,32 +151,38 @@ if survey_mode and not admin_mode:
     st.title("EU AML Package")
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
-        # Question 1
+        # — Domanda 1 senza opzione vuota e senza default pre-selezionato —
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
         bm_yes_no = st.radio(
-            label=" ",
-            options=["Sì", "No"],
-            horizontal=True
+            " ",  # non-empty label per evitare warning
+            ["Sì", "No"],
+            horizontal=True,
+            label_visibility="collapsed",
+            index=None
         )
-        # Question 2
+
+        # — Domanda 2 senza opzione vuota e senza default pre-selezionato —
         st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
-            label=" ",
-            options=[
+            " ",  # non-empty label per evitare warning
+            [
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                 "Non ancora definito"
-            ]
+            ],
+            label_visibility="collapsed",
+            index=None
         )
         bm_notes = None
-        if bm_nominee.startswith("Altro"):
+        if bm_nominee is not None and bm_nominee.startswith("Altro"):
             bm_notes = st.text_area("Specifica qui nelle note:")
-        # Question 3
+
+        # — Domanda 3 invariata —
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
         impacts = st.multiselect(
-            label=" ",
-            options=[
+            " ",  # non-empty label per evitare warning
+            [
                 "Approccio della supervisione (nuove modalità di interazione)",
                 "Poco tempo per conformarsi",
                 "Implementazioni sui sistemi informatici",
@@ -197,28 +203,31 @@ if survey_mode and not admin_mode:
                 "Impatti protezione dati",
                 "Sottoposizione normativa AML"
             ],
-            max_selections=3
+            max_selections=3,
+            label_visibility="collapsed"
         )
-        # Submit
+
         if st.form_submit_button("Invia"):
-            session = SessionLocal()
+            st.info("Attendere…")
+            record = {
+                "bm_yes_no": bm_yes_no,
+                "bm_nominee": bm_nominee,
+                "bm_notes": bm_notes,
+                "impacts": impacts
+            }
+            ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
+            fname = f"responses/{ts}-{uuid4()}.json"
+            payload = json.dumps(record, ensure_ascii=False, indent=2)
             try:
-                resp = Response(
-                    bm_yes_no=bm_yes_no,
-                    bm_nominee=bm_nominee,
-                    bm_notes=bm_notes,
-                    impacts=impacts
-                )
-                session.add(resp)
-                session.commit()
+                create_file_with_retry(repo, fname, "Nuova risposta EU AML Package", payload)
                 st.success("Risposte inviate")
-            except Exception as e:
-                session.rollback()
-                st.error(f"Errore nell'invio: {e}")
-            finally:
-                session.close()
+            except GithubException:
+                st.error("Errore nell'invio. Riprova più tardi.")
+
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
+
+
 
 # ----------------------------------------------------------------
 # 8) Admin Dashboard
@@ -293,6 +302,6 @@ if freqs:
     ).generate_from_frequencies(freqs)
 
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
-    st.image(wc.to_image(), use_column_width=True)
+    st.image(wc.to_image(), use_container_width =True)
 else:
     st.info("Nessuna risposta per le preoccupazioni/impatti.")
