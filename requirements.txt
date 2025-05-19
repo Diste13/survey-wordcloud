@@ -5,3 +5,5 @@ qrcode
 pillow
 PyGithub
 plotly
+sqlalchemy          # ORM e engine
+pydantic           # (opzionale, per validazione JSON)
