@@ -168,27 +168,27 @@ if not survey_mode and not admin_mode:
 # ----------------------------------------------------------------
 # 7) Survey Page
 # ----------------------------------------------------------------
-from db import SessionLocal, Response  # assicurati di avere già importato SessionLocal e Response
+from db import SessionLocal, Response
 import json
 
 if survey_mode and not admin_mode:
     st.title("EU AML Package")
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
-        # — Domanda 1 senza opzione vuota e senza default pre-selezionato —
+        # — Domanda 1 —
         st.write("## 1) Si è già provveduto a nominare l’AML Board Member?")
         bm_yes_no = st.radio(
-            " ",  # non-empty label per evitare warning
+            " ",
             ["Sì", "No"],
             horizontal=True,
             label_visibility="collapsed",
             index=None
         )
 
-        # — Domanda 2 senza opzione vuota e senza default pre-selezionato —
+        # — Domanda 2 —
         st.write("## 2) Quale soggetto è stato nominato come AML Board Member?")
         bm_nominee = st.radio(
-            " ",  # non-empty label per evitare warning
+            " ",
             [
                 "Amministratore Delegato",
                 "Altro membro esecutivo del Consiglio di Amministrazione",
@@ -199,13 +199,13 @@ if survey_mode and not admin_mode:
             index=None
         )
         bm_notes = None
-        if bm_nominee is not None and bm_nominee.startswith("Altro"):
+        if bm_nominee and bm_nominee.startswith("Altro"):
             bm_notes = st.text_area("Specifica qui nelle note:")
 
-        # — Domanda 3 invariata —
+        # — Domanda 3 —
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
         impacts = st.multiselect(
-            " ",  # non-empty label per evitare warning
+            " ",
             [
                 "Approccio della supervisione (nuove modalità di interazione)",
                 "Poco tempo per conformarsi",
@@ -242,17 +242,18 @@ if survey_mode and not admin_mode:
             ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
             fname = f"responses/{ts}-{uuid4()}.json"
             payload = json.dumps(record, ensure_ascii=False, indent=2)
+
             try:
                 # 1) Pusha su GitHub
                 create_file_with_retry(repo, fname, "Nuova risposta EU AML Package", payload)
 
-                # 2) Salva anche in SQLite
+                # 2) Salva in SQLite (campo JSON nativo)
                 session = SessionLocal()
                 new_resp = Response(
                     bm_yes_no=bm_yes_no,
                     bm_nominee=bm_nominee,
                     bm_notes=bm_notes,
-                    impacts=json.dumps(impacts, ensure_ascii=False)  # o passa direttamente la lista se JSONType
+                    impacts=impacts          # lista Python, no json.dumps
                 )
                 session.add(new_resp)
                 session.commit()
@@ -266,6 +267,7 @@ if survey_mode and not admin_mode:
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
+
 
 
 
