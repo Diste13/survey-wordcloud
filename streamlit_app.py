@@ -11,6 +11,7 @@ from wordcloud import WordCloud
 import json
 from github import Github, GithubException
 import time
+from db import SessionLocal, Response  # assicurati di importare il modello
 # ----------------------------------------------------------------
 # Database setup
 # ----------------------------------------------------------------
@@ -163,9 +164,13 @@ if not survey_mode and not admin_mode:
     st.info(survey_url)
     st.stop()
 
+
 # ----------------------------------------------------------------
 # 7) Survey Page
 # ----------------------------------------------------------------
+from db import SessionLocal, Response  # assicurati di avere già importato SessionLocal e Response
+import json
+
 if survey_mode and not admin_mode:
     st.title("EU AML Package")
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
@@ -238,10 +243,26 @@ if survey_mode and not admin_mode:
             fname = f"responses/{ts}-{uuid4()}.json"
             payload = json.dumps(record, ensure_ascii=False, indent=2)
             try:
+                # 1) Pusha su GitHub
                 create_file_with_retry(repo, fname, "Nuova risposta EU AML Package", payload)
-                st.success("Risposte inviate")
+
+                # 2) Salva anche in SQLite
+                session = SessionLocal()
+                new_resp = Response(
+                    bm_yes_no=bm_yes_no,
+                    bm_nominee=bm_nominee,
+                    bm_notes=bm_notes,
+                    impacts=json.dumps(impacts, ensure_ascii=False)  # o passa direttamente la lista se JSONType
+                )
+                session.add(new_resp)
+                session.commit()
+                session.close()
+
+                st.success("Risposte inviate e registrate")
             except GithubException:
-                st.error("Errore nell'invio. Riprova più tardi.")
+                st.error("Errore nell'invio su GitHub. Riprova più tardi.")
+            except Exception as e:
+                st.error(f"Errore nel salvataggio nel DB: {e}")
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
