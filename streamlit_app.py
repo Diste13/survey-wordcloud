@@ -164,7 +164,6 @@ if not survey_mode and not admin_mode:
     st.info(survey_url)
     st.stop()
 
-
 # ----------------------------------------------------------------
 # 7) Survey Page
 # ----------------------------------------------------------------
@@ -268,9 +267,6 @@ if survey_mode and not admin_mode:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-
-
-
 # ----------------------------------------------------------------
 # 8) Admin Dashboard
 # ----------------------------------------------------------------
@@ -278,20 +274,21 @@ st.title("EU AML Package - Admin")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
-@st.cache_data(ttl=300)
+# Funzione senza caching
+
 def load_responses():
     session = SessionLocal()
     try:
         rows = session.query(Response).order_by(Response.timestamp).all()
         return [
-            {"bm_yes_no": r.bm_yes_no,
-             "bm_nominee": r.bm_nominee,
-             "bm_notes": r.bm_notes,
-             "impacts":   r.impacts}
+             {"bm_yes_no": r.bm_yes_no,
+              "bm_nominee": r.bm_nominee,
+              "bm_notes": r.bm_notes,
+              "impacts":   r.impacts}
             for r in rows
-        ]
+         ]
     finally:
-        session.close()
+         session.close()
 
 # Load data
 data = load_responses()
@@ -340,7 +337,10 @@ if freqs:
         height=800,
         scale=4,
         background_color="white",
-        color_func=random_color
+        color_func=random_color,
+        collocations=False,
+        font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        max_words=100
     ).generate_from_frequencies(freqs)
 
     st.subheader("3) EU AML Package - Principali preoccupazioni ed impatti")
