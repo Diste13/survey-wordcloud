@@ -8,7 +8,7 @@ import random
 from collections import Counter
 import plotly.express as px
 from wordcloud import WordCloud
-
+import json
 # ----------------------------------------------------------------
 # Database setup
 # ----------------------------------------------------------------
