@@ -153,7 +153,7 @@ if not survey_mode and not admin_mode:
     st.title("EU AML Package")
     survey_url = f"{app_url}?survey=1"
 
-    # Genera e mostra QR
+    # Genera e mostra QR più piccolo
     qr = qrcode.make(survey_url)
     buf = io.BytesIO()
     qr.save(buf, format="PNG")
@@ -161,15 +161,32 @@ if not survey_mode and not admin_mode:
 
     col1, col2, col3 = st.columns([1,3,1])
     with col2:
-        st.image(buf, use_container_width=True)
-        # URL molto più grande sotto il QR
+        st.image(buf, width=300)  # QR a 300px
+
+        # URL grande, senza andare a capo
         st.markdown(
-            f"<div style='text-align:center; font-size:30px; word-break:break-all; margin-top:20px;'>{survey_url}</div>",
+            f"""
+            <div style="
+                text-align: center;
+                font-size: 48px;
+                white-space: nowrap;
+                overflow-x: auto;
+                margin-top: 20px;
+            ">
+                {survey_url}
+            </div>
+            """,
             unsafe_allow_html=True
         )
-        # Link alternativo
-        st.markdown(f"[Oppure clicca qui per il form]({survey_url})")
+
+        # Link alternativo sotto
+        st.markdown(
+            f"<div style='text-align:center; margin-top:10px;'><a href='{survey_url}' target='_blank'>Apri il form</a></div>",
+            unsafe_allow_html=True
+        )
+
     st.stop()
+
 
 # ----------------------------------------------------------------
 # 7) Survey Page (risposte sotto, non al lato)
