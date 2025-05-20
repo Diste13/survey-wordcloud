@@ -1,4 +1,3 @@
-
 # streamlit_app.py
 import os
 import time
@@ -9,6 +8,7 @@ from uuid import uuid4
 from datetime import datetime
 from collections import Counter
 import random
+
 import streamlit as st
 import qrcode
 import plotly.express as px
@@ -171,19 +171,19 @@ if survey_mode and not admin_mode:
         st.write("## 01. Adeguamento ad EU AML Package")
         gap_analysis = st.radio(
             "1. È stata già avviata una gap analysis su EU AML Package?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed", index=None
+            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
         )
         board_inform = st.radio(
-            "2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazioni per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed", index=None
+            "2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?",
+            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
         )
         budget = st.radio(
             "3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed", index=None
+            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
         )
         adeguamento_specifico = st.radio(
             "4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed", index=None
+            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
         )
 
         # Sezione 02
@@ -206,7 +206,7 @@ if survey_mode and not admin_mode:
         st.write("## 03. Nuova governance AML")
         bm_yes_no = st.radio(
             "1. Si è già provveduto a nominare l’AML Board Member?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed", index=None
+            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
         )
         bm_nominee = st.radio(
             "2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?",
@@ -216,8 +216,7 @@ if survey_mode and not admin_mode:
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                 "Non ancora definito"
             ],
-            label_visibility="collapsed",
-            index=None
+            label_visibility="collapsed"
         )
 
         if st.form_submit_button("Invia"):
@@ -289,50 +288,74 @@ if not responses:
     st.info("Ancora nessuna risposta.")
     st.stop()
 
-# Tree plots for Sì/No domande
-yesno_keys = [
-    ("gap_analysis", "01. Gap analysis avviata?"),
-    ("board_inform", "02. CdA informato?"),
-    ("budget", "03. Budget stanziato?"),
-    ("adeguamento_specifico", "04. Adeguamento specifico avviato?"),
-    ("bm_yes_no", "05. AML Board Member nominato?")
-]
-for key, title in yesno_keys:
-    counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
-    if counts:
-        df = {"Risposta": list(counts.keys()), "Conteggio": list(counts.values())}
-        fig = px.treemap(df, path=[px.Constant(title), "Risposta"], values="Conteggio")
-        fig.update_layout(margin=dict(t=50, l=25, r=25, b=25))
-        st.subheader(title)
-        st.plotly_chart(fig, use_container_width=True)
+# Definizione delle sezioni e delle domande
+sections = {
+    "01. Adeguamento ad EU AML Package": {
+        "yesno": [
+            ("gap_analysis", "1. È stata già avviata una gap analysis su EU AML Package?"),
+            ("board_inform", "2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?"),
+            ("budget", "3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?"),
+            ("adeguamento_specifico", "4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?")
+        ]
+    },
+    "02. Principali impatti attesi da EU AML Package": {
+        "multiselect": [
+            ("impacts", "1. Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo? (selezionare fino a 3 opzioni)")
+        ]
+    },
+    "03. Nuova governance AML": {
+        "yesno": [
+            ("bm_yes_no", "1. Si è già provveduto a nominare l’AML Board Member?")
+        ],
+        "categorical": [
+            ("bm_nominee", "2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
+        ]
+    }
+}
+
+# Rendering dashboard per sezione
+for section_title, content in sections.items():
+    st.header(section_title)
+
+    # Sì/No questions
+    for key, question in content.get("yesno", []):
+        counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
+        if counts:
+            df = {"Risposta": list(counts.keys()), "Conteggio": list(counts.values())}
+            fig = px.treemap(df, path=[px.Constant(question), "Risposta"], values="Conteggio")
+            fig.update_layout(margin=dict(t=40, l=25, r=25, b=25))
+            st.subheader(question)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
-    else:
-        st.info(f"Nessuna risposta per '{title}'.")
 
-# WordCloud Sezione 02
-freqs = Counter(choice for r in responses for choice in r.get("impacts", []))
-if freqs:
-    palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#FD349C"]
-    def random_color(word, font_size, position, orientation, random_state=None, **kwargs):
-        return random.choice(palette)
+    # Multi‐select question (WordCloud)
+    for key, question in content.get("multiselect", []):
+        freqs = Counter(choice for r in responses for choice in r.get(key, []))
+        if freqs:
+            st.subheader(question)
+            palette = ["#00338D", "#1E49E2", "#0C233C", "#ACEAFF", "#00B8F5", "#7210EA", "#FD349C"]
+            wc = WordCloud(
+                width=1600, height=800, scale=4, background_color="white",
+                color_func=lambda *args, **kwargs: random.choice(palette),
+                collocations=False,
+                font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                max_words=100
+            ).generate_from_frequencies(freqs)
+            st.image(wc.to_image(), use_container_width=True)
+        else:
+            st.info(f"Nessuna risposta per '{question}'.")
+        st.write("---")
 
-    wc = WordCloud(width=1600, height=800, scale=4, background_color="white",
-                   color_func=random_color, collocations=False,
-                   font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                   max_words=100).generate_from_frequencies(freqs)
-
-    st.subheader("Sezione 02 - Principali impatti attesi")
-    st.image(wc.to_image(), use_container_width=True)
-    st.write("---")
-else:
-    st.info("Nessuna risposta per Sezione 02")
-
-# Bar chart Sezione 03 Q2
-counts = Counter(r.get("bm_nominee") for r in responses if r.get("bm_nominee"))
-if counts:
-    df = {"Soggetto": list(counts.keys()), "Conteggio": list(counts.values())}
-    fig = px.bar(df, x="Soggetto", y="Conteggio")
-    st.subheader("Sezione 03 - Soggetto nominato AML Board Member")
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    st.info("Nessuna risposta per Sezione 03 Q2")
+    # Categorical / bar chart questions
+    for key, question in content.get("categorical", []):
+        counts = Counter(r.get(key) for r in responses if r.get(key))
+        if counts:
+            st.subheader(question)
+            df = {"Opzione": list(counts.keys()), "Conteggio": list(counts.values())}
+            fig = px.bar(df, x="Opzione", y="Conteggio")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info(f"Nessuna risposta per '{question}'.")
+        st.write("---")
