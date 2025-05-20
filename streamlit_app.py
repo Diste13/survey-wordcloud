@@ -422,56 +422,60 @@ sections = {
 for section_title, content in sections.items():
     st.header(section_title)
 
-    # Sì/No questions as treemap (con "Sì" sempre a sinistra)
+    # --- Sì/No questions as treemap (con "Sì" sempre a sinistra) ---
     for key, question in content.get("yesno", []):
         counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
         if counts:
-            # 1) Forza "Sì" come primo elemento
+            # 1) Ordine manuale: Sì sempre primo
             items = []
             if "Sì" in counts:
                 items.append(("Sì", counts["Sì"]))
-            # aggiungi poi tutti gli altri
             for k, v in counts.items():
                 if k != "Sì":
                     items.append((k, v))
+
             df = {
                 "Risposta": [i[0] for i in items],
                 "Conteggio": [i[1] for i in items]
             }
 
-            # 2) Definisci la mappa colori
-            color_map = {
-                "Sì": PALETTE[4],   # quinto colore
-                "No": PALETTE[1]    # secondo colore
-            }
+            # 2) Mappa colori
+            color_map = {"Sì": PALETTE[4], "No": PALETTE[1]}
 
-            # 3) Costruisci il treemap senza ri‐ordinare e applica i colori
+            # 3) Treemap a un solo livello
             fig = px.treemap(
                 df,
+                path=["Risposta"],
                 values="Conteggio",
                 color="Risposta",
                 color_discrete_map=color_map
-                
             )
-            # Disabilita l’ordinamento automatico
-            fig.data[0].sort = False
 
-            # Mantieni le tue impostazioni di text/font
+            # 4) Disabilita sorting e bordi
+            fig.data[0].sort = False
+            fig.data[0].marker.line_width = 0
+
+            # 5) Testo
             fig.update_traces(
                 hoverinfo="none",
                 hovertemplate=None,
-                textinfo="label+percent parent",
+                textinfo="label+percent entry",
                 textposition="middle center",
                 textfont=dict(size=30, color="white")
             )
-            fig.update_layout(margin=dict(t=40, l=25, r=25, b=25))
+            fig.update_layout(margin=dict(t=10, l=10, r=10, b=10))
 
             st.subheader(question)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(
+                fig,
+                use_container_width=True,
+                key=f"treemap-{section_title}-{key}"
+            )
         else:
             st.info(f"Nessuna risposta per '{question}'.")
+        st.write("---")
 
-    # Multiselect as WordCloud
+    # --- Multiselect as WordCloud ---
     for key, question in content.get("multiselect", []):
         freqs = Counter(choice for r in responses for choice in r.get(key, []))
         if freqs:
@@ -488,14 +492,13 @@ for section_title, content in sections.items():
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
 
-    # Categorical as bar chart (senza decimali, label x più grandi)
+    # --- Categorical as bar chart (senza decimali, label x più grandi) ---
     for key, question in content.get("categorical", []):
         counts = Counter(r.get(key) for r in responses if r.get(key))
         if counts:
             st.subheader(question)
             df = {"Opzione": list(counts.keys()), "Conteggio": list(counts.values())}
             fig = px.bar(df, x="Opzione", y="Conteggio")
-            # Rimuovi decimali e ingrandisci label asse x
             fig.update_yaxes(tickformat=".0f", showgrid=False)
             fig.update_xaxes(tickfont=dict(size=14), showgrid=False)
             fig.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=80))
