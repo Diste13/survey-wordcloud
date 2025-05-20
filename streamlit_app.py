@@ -152,25 +152,32 @@ if logo_b64 or logo2_b64:
 if not survey_mode and not admin_mode:
     st.title("EU AML Package")
     survey_url = f"{app_url}?survey=1"
+
+    # Genera e mostra QR
     qr = qrcode.make(survey_url)
     buf = io.BytesIO()
     qr.save(buf, format="PNG")
     buf.seek(0)
+
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        st.image(buf, caption="Scansiona per aprire il questionario", width=800)
-    st.markdown(f"[Oppure clicca qui per il form]({survey_url})")
-    st.info(survey_url)
+        st.image(buf, width=800)
+        # URL molto più grande sotto il QR
+        st.markdown(
+            f"<div style='text-align:center; font-size:32px; word-break:break-all; margin-top:20px;'>{survey_url}</div>",
+            unsafe_allow_html=True
+        )
+        # Link alternativo
+        st.markdown(f"[Oppure clicca qui per il form]({survey_url})")
     st.stop()
 
 # ----------------------------------------------------------------
-# 7) Survey Page (cards, stepper, columns, palette)
+# 7) Survey Page (risposte sotto, non al lato)
 # ----------------------------------------------------------------
 if survey_mode and not admin_mode:
     st.title("EU AML Package")
 
     # Step 1 indicator
-    st.markdown("**Passo 1 di 3**")
     st.progress(1/3)
 
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
@@ -179,61 +186,48 @@ if survey_mode and not admin_mode:
         st.markdown("<div class='form-card'>", unsafe_allow_html=True)
         st.write("## 01. Adeguamento ad EU AML Package")
 
-        col1, col2 = st.columns([3,1])
-        with col1:
-            st.write("**1. È stata già avviata una gap analysis su EU AML Package?**")
-        with col2:
-            gap_analysis = st.radio(
-                label="",
-                options=["Sì", "No"],
-                key="gap_analysis",
-                horizontal=True,
-                label_visibility="collapsed",
-                index=None
-            )
+        # 1.
+        st.write("**1. È stata già avviata una gap analysis su EU AML Package?**")
+        gap_analysis = st.radio(
+            label="",
+            options=["Sì", "No"],
+            key="gap_analysis",
+            horizontal=False,
+            label_visibility="collapsed"
+        )
 
-        col1, col2 = st.columns([3,1])
-        with col1:
-            st.write("**2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?**")
-        with col2:
-            board_inform = st.radio(
-                label="",
-                options=["Sì", "No"],
-                key="board_inform",
-                horizontal=True,
-                label_visibility="collapsed",
-                index=None
-            )
+        # 2.
+        st.write("**2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?**")
+        board_inform = st.radio(
+            label="",
+            options=["Sì", "No"],
+            key="board_inform",
+            horizontal=False,
+            label_visibility="collapsed"
+        )
 
-        col1, col2 = st.columns([3,1])
-        with col1:
-            st.write("**3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?**")
-        with col2:
-            budget = st.radio(
-                label="",
-                options=["Sì", "No"],
-                key="budget",
-                horizontal=True,
-                label_visibility="collapsed",
-                index=None
-            )
+        # 3.
+        st.write("**3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?**")
+        budget = st.radio(
+            label="",
+            options=["Sì", "No"],
+            key="budget",
+            horizontal=False,
+            label_visibility="collapsed"
+        )
 
-        col1, col2 = st.columns([3,1])
-        with col1:
-            st.write("**4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?**")
-        with col2:
-            adeguamento_specifico = st.radio(
-                label="",
-                options=["Sì", "No"],
-                key="adeguamento_specifico",
-                horizontal=True,
-                label_visibility="collapsed",
-                index=None
-            )
+        # 4.
+        st.write("**4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?**")
+        adeguamento_specifico = st.radio(
+            label="",
+            options=["Sì", "No"],
+            key="adeguamento_specifico",
+            horizontal=False,
+            label_visibility="collapsed"
+        )
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Step 2 indicator
-        st.markdown("**Passo 2 di 3**")
         st.progress(2/3)
 
         # Section 2
@@ -255,42 +249,36 @@ if survey_mode and not admin_mode:
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Step 3 indicator
-        st.markdown("**Passo 3 di 3**")
         st.progress(3/3)
 
         # Section 3
         st.markdown("<div class='form-card'>", unsafe_allow_html=True)
         st.write("## 03. Nuova governance AML")
 
-        col1, col2 = st.columns([3,1])
-        with col1:
-            st.write("**1. Si è già provveduto a nominare l’AML Board Member?**")
-        with col2:
-            bm_yes_no = st.radio(
-                label="",
-                options=["Sì", "No"],
-                key="bm_yes_no",
-                horizontal=True,
-                label_visibility="collapsed",
-                index=None
-            )
+        # 1.
+        st.write("**1. Si è già provveduto a nominare l’AML Board Member?**")
+        bm_yes_no = st.radio(
+            label="",
+            options=["Sì", "No"],
+            key="bm_yes_no",
+            horizontal=False,
+            label_visibility="collapsed"
+        )
 
-        col1, col2 = st.columns([3,1])
-        with col1:
-            st.write("**2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?**")
-        with col2:
-            bm_nominee = st.radio(
-                label="",
-                options=[
-                    "Amministratore Delegato",
-                    "Altro membro esecutivo del Consiglio di Amministrazione",
-                    "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
-                    "Non ancora definito"
-                ],
-                key="bm_nominee",
-                label_visibility="collapsed",
-                index=None
-            )
+        # 2.
+        st.write("**2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?**")
+        bm_nominee = st.radio(
+            label="",
+            options=[
+                "Amministratore Delegato",
+                "Altro membro esecutivo del Consiglio di Amministrazione",
+                "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
+                "Non ancora definito"
+            ],
+            key="bm_nominee",
+            horizontal=False,
+            label_visibility="collapsed"
+        )
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Submit
@@ -393,11 +381,19 @@ sections = {
 for section_title, content in sections.items():
     st.header(section_title)
 
-    # Sì/No questions as treemap
+    # Sì/No questions as treemap (con "Sì" sempre a sinistra)
     for key, question in content.get("yesno", []):
         counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
         if counts:
-            df = {"Risposta": list(counts.keys()), "Conteggio": list(counts.values())}
+            # Forza "Sì" come primo elemento
+            items = []
+            if "Sì" in counts:
+                items.append(("Sì", counts["Sì"]))
+            for k, v in counts.items():
+                if k != "Sì":
+                    items.append((k, v))
+            df = {"Risposta": [i[0] for i in items], "Conteggio": [i[1] for i in items]}
+
             fig = px.treemap(df, path=[px.Constant(question), "Risposta"], values="Conteggio")
             fig.update_traces(
                 hoverinfo="none",
@@ -430,16 +426,17 @@ for section_title, content in sections.items():
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
 
-    # Categorical as bar chart
+    # Categorical as bar chart (senza decimali, label x più grandi)
     for key, question in content.get("categorical", []):
         counts = Counter(r.get(key) for r in responses if r.get(key))
         if counts:
             st.subheader(question)
             df = {"Opzione": list(counts.keys()), "Conteggio": list(counts.values())}
             fig = px.bar(df, x="Opzione", y="Conteggio")
-            fig.update_layout(xaxis_title=None, yaxis_title=None)
-            fig.update_xaxes(showgrid=False)
-            fig.update_yaxes(showgrid=False)
+            # Rimuovi decimali e ingrandisci label asse x
+            fig.update_yaxes(tickformat=".0f", showgrid=False)
+            fig.update_xaxes(tickfont=dict(size=14), showgrid=False)
+            fig.update_layout(xaxis_title=None, yaxis_title=None, margin=dict(t=20, b=80))
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info(f"Nessuna risposta per '{question}'.")
