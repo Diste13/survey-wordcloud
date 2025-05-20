@@ -448,10 +448,10 @@ for section_title, content in sections.items():
             # 3) Costruisci il treemap senza ri‐ordinare e applica i colori
             fig = px.treemap(
                 df,
-                path=[px.Constant(question), "Risposta"],
                 values="Conteggio",
                 color="Risposta",
-                color_discrete_map=color_map
+                color_discrete_map=color_map,
+                root_color= "white"
             )
             # Disabilita l’ordinamento automatico
             fig.data[0].sort = False
