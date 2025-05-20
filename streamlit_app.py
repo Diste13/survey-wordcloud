@@ -314,6 +314,7 @@ sections = {
 }
 
 # Rendering dashboard per sezione
+# Rendering dashboard per sezione
 for section_title, content in sections.items():
     st.header(section_title)
 
@@ -321,9 +322,34 @@ for section_title, content in sections.items():
     for key, question in content.get("yesno", []):
         counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
         if counts:
-            df = {"Risposta": list(counts.keys()), "Conteggio": list(counts.values())}
-            fig = px.treemap(df, path=[px.Constant(question), "Risposta"], values="Conteggio")
+            # Preparo il DataFrame
+            df = {
+                "Risposta": list(counts.keys()),
+                "Conteggio": list(counts.values())
+            }
+
+            # Creo il treemap
+            fig = px.treemap(
+                df,
+                path=[px.Constant(question), "Risposta"],
+                values="Conteggio"
+            )
+
+            # 1) Rimuovo completamente l’hoverlabel
+            # 2) Cento testo e percentuale (rispetto al totale di Sì+No)
+            # 3) Imposto testo in bianco e di dimensione leggibile
+            fig.update_traces(
+                hoverinfo="none",
+                hovertemplate=None,
+                texttemplate="%{label}<br>%{percent entry:.0%}",
+                textposition="middle center",
+                textfont=dict(size=20, color="white")
+            )
+
+            # 4) Margini stretti
             fig.update_layout(margin=dict(t=40, l=25, r=25, b=25))
+
+            # Stampo
             st.subheader(question)
             st.plotly_chart(fig, use_container_width=True)
         else:
