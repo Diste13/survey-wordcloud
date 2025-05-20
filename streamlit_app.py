@@ -19,7 +19,7 @@ from github import Github, GithubException
 from db import init_db, SessionLocal, Response
 
 # ----------------------------------------------------------------
-# 0) Brand palette
+# 1) Brand palette
 # ----------------------------------------------------------------
 PALETTE = [
     "#00338D",  # primary
@@ -32,7 +32,7 @@ PALETTE = [
 ]
 
 # ----------------------------------------------------------------
-# 1) Page config and DB init
+# 2) Page config and DB init
 # ----------------------------------------------------------------
 st.set_page_config(
     page_title="EU AML Package",
@@ -58,66 +58,80 @@ def create_file_with_retry(repo, path, message, content, max_tries=3, backoff=0.
                 raise
 
 # ----------------------------------------------------------------
-# 2) Read query params
+# 3) Read query params
 # ----------------------------------------------------------------
 params      = st.query_params
 survey_mode = params.get("survey", ["0"])[0] == "1"
 admin_mode  = params.get("admin",  ["0"])[0] == "1"
 
 # ----------------------------------------------------------------
-# 3) Global theme & component CSS
+# 4) Global CSS (QR landing, top bar, form, theme)
 # ----------------------------------------------------------------
-theme_css = f"""
-<style>
-:root {{
-  --primary: {PALETTE[0]};
-  --secondary: {PALETTE[1]};
-  --tertiary: {PALETTE[2]};
-  --accent-light: {PALETTE[3]};
-  --accent: {PALETTE[4]};
-  --highlight: {PALETTE[5]};
-  --pink: {PALETTE[6]};
-}}
-/* Buttons */
-[data-testid="stButton"] > button {{
-  background-color: var(--primary) !important;
-  color: white !important;
-  border-radius: 8px !important;
-}}
-/* Progress bar */
-.stProgress > div > div > div {{
-  background-color: var(--secondary) !important;
-}}
-/* Card style for each section */
-.form-card {{
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  padding: 24px;
-  margin-bottom: 24px;
-}}
-</style>
-"""
-st.markdown(theme_css, unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <style>
+      /* QR landing: center container on landing page */
+      [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {{
+        max-width:700px !important;
+        margin-left:auto !important;
+        margin-right:auto !important;
+      }}
+
+      /* Hide default header and sidebar background */
+      header {{ visibility: hidden; }}
+      [data-testid="stHeader"], [data-testid="stSidebar"] {{
+        background-color: var(--primary, {PALETTE[0]}) !important;
+      }}
+
+      /* Top bar */
+      .top_bar {{
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100px;
+        background-color: var(--primary, {PALETTE[0]});
+        display: flex; align-items: center;
+        padding-left: 20px; z-index: 9999;
+      }}
+      .top_bar img {{ height: 60px; }}
+      .logo-acora {{ height: 40px !important; margin-left:20px; }}
+
+      /* Space below top bar */
+      [data-testid="stBlockContainer"] {{ padding-top: 100px; }}
+
+      /* Form container */
+      .form-container {{
+        max-width: 900px !important;
+        width: 90%   !important;
+        margin: 0 auto 40px auto;
+      }}
+
+      /* Card style */
+      .form-card {{
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        padding: 24px;
+        margin-bottom: 24px;
+      }}
+
+      /* Buttons */
+      [data-testid="stButton"] > button {{
+        background-color: var(--primary, {PALETTE[0]}) !important;
+        color: white !important;
+        border-radius: 8px !important;
+      }}
+
+      /* Progress bar */
+      .stProgress > div > div > div {{
+        background-color: var(--secondary, {PALETTE[1]}) !important;
+      }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ----------------------------------------------------------------
-# 4) QR Landing CSS (unchanged)
-# ----------------------------------------------------------------
-if not survey_mode and not admin_mode:
-    st.markdown(
-        """
-        <style>
-          [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
-            max-width:700px !important;
-            margin-left:auto !important;
-            margin-right:auto !important;
-          }
-        </style>
-        """, unsafe_allow_html=True
-    )
-
-# ----------------------------------------------------------------
-# 5) Top bar logos (unchanged)
+# 5) Top bar logos
 # ----------------------------------------------------------------
 logo_b64 = None
 logo2_b64 = None
@@ -125,8 +139,7 @@ for asset, var_name in [("assets/immagine.png", "logo_b64"),
                         ("assets/acorà logo.png", "logo2_b64")]:
     try:
         with open(asset, "rb") as f:
-            data = f.read()
-        b64 = base64.b64encode(data).decode()
+            b64 = base64.b64encode(f.read()).decode()
         if var_name == "logo_b64":
             logo_b64 = b64
         else:
@@ -143,7 +156,7 @@ if logo_b64 or logo2_b64:
     st.markdown(f"<div class='top_bar'>{imgs_html}</div>", unsafe_allow_html=True)
 
 # ----------------------------------------------------------------
-# 6) QR Landing Page (unchanged)
+# 6) QR Landing Page
 # ----------------------------------------------------------------
 if not survey_mode and not admin_mode:
     st.title("EU AML Package")
@@ -160,60 +173,80 @@ if not survey_mode and not admin_mode:
     st.stop()
 
 # ----------------------------------------------------------------
-# 7) Survey Page with cards, stepper, columns layout
+# 7) Survey Page (cards, stepper, columns, palette)
 # ----------------------------------------------------------------
 if survey_mode and not admin_mode:
     st.title("EU AML Package")
 
-    total_steps = 3
-    progress_bar   = st.progress(0)
-    step_placeholder = st.empty()
-    step_num = 1
-    step_placeholder.markdown(f"**Passo {step_num} di {total_steps}**")
+    # Step 1 indicator
+    st.markdown("**Passo 1 di 3**")
+    st.progress(1/3)
 
     st.markdown("<div class='form-container'>", unsafe_allow_html=True)
     with st.form("survey"):
-
-        # -- Section 1 Card --
+        # Section 1
         st.markdown("<div class='form-card'>", unsafe_allow_html=True)
         st.write("## 01. Adeguamento ad EU AML Package")
 
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3,1])
         with col1:
             st.write("1. È stata già avviata una gap analysis su EU AML Package?")
         with col2:
-            gap_analysis = st.radio("", ["Sì", "No"], horizontal=True, label_visibility="collapsed")
+            gap_analysis = st.radio(
+                label="",
+                options=["Sì", "No"],
+                key="gap_analysis",
+                horizontal=True,
+                label_visibility="collapsed"
+            )
 
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3,1])
         with col1:
             st.write("2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?")
         with col2:
-            board_inform = st.radio("", ["Sì", "No"], horizontal=True, label_visibility="collapsed")
+            board_inform = st.radio(
+                label="",
+                options=["Sì", "No"],
+                key="board_inform",
+                horizontal=True,
+                label_visibility="collapsed"
+            )
 
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3,1])
         with col1:
             st.write("3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?")
         with col2:
-            budget = st.radio("", ["Sì", "No"], horizontal=True, label_visibility="collapsed")
+            budget = st.radio(
+                label="",
+                options=["Sì", "No"],
+                key="budget",
+                horizontal=True,
+                label_visibility="collapsed"
+            )
 
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3,1])
         with col1:
             st.write("4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?")
         with col2:
-            adeguamento_specifico = st.radio("", ["Sì", "No"], horizontal=True, label_visibility="collapsed")
+            adeguamento_specifico = st.radio(
+                label="",
+                options=["Sì", "No"],
+                key="adeguamento_specifico",
+                horizontal=True,
+                label_visibility="collapsed"
+            )
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # update stepper to Section 2
-        step_num += 1
-        progress_bar.progress(int((step_num-1)/total_steps * 100))
-        step_placeholder.markdown(f"**Passo {step_num} di {total_steps}**")
+        # Step 2 indicator
+        st.markdown("**Passo 2 di 3**")
+        st.progress(2/3)
 
-        # -- Section 2 Card --
+        # Section 2
         st.markdown("<div class='form-card'>", unsafe_allow_html=True)
         st.write("## 02. Principali impatti attesi da EU AML Package")
         impacts = st.multiselect(
-            "Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo (selezionare fino a 3 opzioni)?",
-            [
+            label="1. Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo (selezionare fino a 3 opzioni)?",
+            options=[
                 "Supervisione diretta", "Tempistiche di adeguamento", "Complessità del quadro normativo",
                 "Implementazioni informatiche", "AML Governance", "Risk assessment", "Data model",
                 "Know your customer", "Transaction monitoring", "Targeted Financial sanctions",
@@ -222,83 +255,91 @@ if survey_mode and not admin_mode:
                 "Nessun impatto identificato al momento"
             ],
             max_selections=3,
-            label_visibility="visible"
+            key="impacts"
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # update stepper to Section 3
-        step_num += 1
-        progress_bar.progress(int((step_num-1)/total_steps * 100))
-        step_placeholder.markdown(f"**Passo {step_num} di {total_steps}**")
+        # Step 3 indicator
+        st.markdown("**Passo 3 di 3**")
+        st.progress(3/3)
 
-        # -- Section 3 Card --
+        # Section 3
         st.markdown("<div class='form-card'>", unsafe_allow_html=True)
         st.write("## 03. Nuova governance AML")
 
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3,1])
         with col1:
             st.write("1. Si è già provveduto a nominare l’AML Board Member?")
         with col2:
-            bm_yes_no = st.radio("", ["Sì", "No"], horizontal=True, label_visibility="collapsed")
+            bm_yes_no = st.radio(
+                label="",
+                options=["Sì", "No"],
+                key="bm_yes_no",
+                horizontal=True,
+                label_visibility="collapsed"
+            )
 
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3,1])
         with col1:
             st.write("2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
         with col2:
             bm_nominee = st.radio(
-                "",
-                [
+                label="",
+                options=[
                     "Amministratore Delegato",
                     "Altro membro esecutivo del Consiglio di Amministrazione",
                     "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                     "Non ancora definito"
                 ],
+                key="bm_nominee",
                 label_visibility="collapsed"
             )
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Submit
-        if st.form_submit_button("Invia"):
-            st.info("Attendere…")
-            record = {
-                "gap_analysis": gap_analysis,
-                "board_inform": board_inform,
-                "budget": budget,
-                "adeguamento_specifico": adeguamento_specifico,
-                "impacts": impacts,
-                "bm_yes_no": bm_yes_no,
-                "bm_nominee": bm_nominee
-            }
-            ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
-            fname = f"responses/{ts}-{uuid4()}.json"
-            payload = json.dumps(record, ensure_ascii=False, indent=2)
+        submit = st.form_submit_button("Invia")
 
-            try:
-                create_file_with_retry(repo, fname, "Nuova risposta EU AML Package", payload)
-                session = SessionLocal()
-                new_resp = Response(
-                    gap_analysis=gap_analysis,
-                    board_inform=board_inform,
-                    budget=budget,
-                    adeguamento_specifico=adeguamento_specifico,
-                    impacts=impacts,
-                    bm_yes_no=bm_yes_no,
-                    bm_nominee=bm_nominee
-                )
-                session.add(new_resp)
-                session.commit()
-                session.close()
-                st.success("Risposte inviate e registrate")
-            except GithubException:
-                st.error("Errore nell'invio su GitHub. Riprova più tardi.")
-            except Exception as e:
-                st.error(f"Errore nel salvataggio nel DB: {e}")
+    if submit:
+        st.info("Attendere…")
+        record = {
+            "gap_analysis": gap_analysis,
+            "board_inform": board_inform,
+            "budget": budget,
+            "adeguamento_specifico": adeguamento_specifico,
+            "impacts": impacts,
+            "bm_yes_no": bm_yes_no,
+            "bm_nominee": bm_nominee
+        }
+        ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
+        fname = f"responses/{ts}-{uuid4()}.json"
+        payload = json.dumps(record, ensure_ascii=False, indent=2)
+
+        try:
+            create_file_with_retry(repo, fname, "Nuova risposta EU AML Package", payload)
+            session = SessionLocal()
+            new_resp = Response(
+                gap_analysis=gap_analysis,
+                board_inform=board_inform,
+                budget=budget,
+                adeguamento_specifico=adeguamento_specifico,
+                impacts=impacts,
+                bm_yes_no=bm_yes_no,
+                bm_nominee=bm_nominee
+            )
+            session.add(new_resp)
+            session.commit()
+            session.close()
+            st.success("Risposte inviate e registrate")
+        except GithubException:
+            st.error("Errore nell'invio su GitHub. Riprova più tardi.")
+        except Exception as e:
+            st.error(f"Errore nel salvataggio nel DB: {e}")
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ----------------------------------------------------------------
-# 8) Admin Dashboard (unchanged)
+# 8) Admin Dashboard
 # ----------------------------------------------------------------
 st.title("EU AML Package - Admin")
 st.markdown(f"[Torna alla QR page]({app_url})")
@@ -355,13 +396,11 @@ sections = {
 for section_title, content in sections.items():
     st.header(section_title)
 
+    # Sì/No questions as treemap
     for key, question in content.get("yesno", []):
         counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
         if counts:
-            df = {
-                "Risposta": list(counts.keys()),
-                "Conteggio": list(counts.values())
-            }
+            df = {"Risposta": list(counts.keys()), "Conteggio": list(counts.values())}
             fig = px.treemap(df, path=[px.Constant(question), "Risposta"], values="Conteggio")
             fig.update_traces(
                 hoverinfo="none",
@@ -377,6 +416,7 @@ for section_title, content in sections.items():
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
 
+    # Multiselect as WordCloud
     for key, question in content.get("multiselect", []):
         freqs = Counter(choice for r in responses for choice in r.get(key, []))
         if freqs:
@@ -393,6 +433,7 @@ for section_title, content in sections.items():
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
 
+    # Categorical as bar chart
     for key, question in content.get("categorical", []):
         counts = Counter(r.get(key) for r in responses if r.get(key))
         if counts:
