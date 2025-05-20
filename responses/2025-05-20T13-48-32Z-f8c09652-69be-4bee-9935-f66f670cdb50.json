@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "No",
+  "budget": "Sì",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "Tempistiche di adeguamento",
+    "AML Governance",
+    "Transaction monitoring"
+  ],
+  "bm_yes_no": "No",
+  "bm_nominee": "Non ancora definito"
+}
