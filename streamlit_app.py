@@ -171,19 +171,19 @@ if survey_mode and not admin_mode:
         st.write("## 01. Adeguamento ad EU AML Package")
         gap_analysis = st.radio(
             "1. È stata già avviata una gap analysis su EU AML Package?",
-            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="visible"
         )
         board_inform = st.radio(
             "2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?",
-            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="visible"
         )
         budget = st.radio(
             "3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?",
-            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="visible"
         )
         adeguamento_specifico = st.radio(
             "4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?",
-            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="visible"
         )
 
         # Sezione 02
@@ -199,14 +199,14 @@ if survey_mode and not admin_mode:
                 "Nessun impatto identificato al momento"
             ],
             max_selections=3,
-            label_visibility="collapsed"
+            label_visibility="visible"
         )
 
         # Sezione 03
         st.write("## 03. Nuova governance AML")
         bm_yes_no = st.radio(
             "1. Si è già provveduto a nominare l’AML Board Member?",
-            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="visible"
         )
         bm_nominee = st.radio(
             "2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?",
@@ -216,7 +216,7 @@ if survey_mode and not admin_mode:
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                 "Non ancora definito"
             ],
-            index=None, label_visibility="collapsed"
+            index=None, label_visibility="visible"
         )
 
         if st.form_submit_button("Invia"):
