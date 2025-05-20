@@ -171,19 +171,19 @@ if survey_mode and not admin_mode:
         st.write("## 01. Adeguamento ad EU AML Package")
         gap_analysis = st.radio(
             "1. È stata già avviata una gap analysis su EU AML Package?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
         )
         board_inform = st.radio(
             "2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
         )
         budget = st.radio(
             "3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
         )
         adeguamento_specifico = st.radio(
             "4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
         )
 
         # Sezione 02
@@ -206,7 +206,7 @@ if survey_mode and not admin_mode:
         st.write("## 03. Nuova governance AML")
         bm_yes_no = st.radio(
             "1. Si è già provveduto a nominare l’AML Board Member?",
-            ["Sì", "No"], horizontal=True, label_visibility="collapsed"
+            ["Sì", "No"], horizontal=True, index=None, label_visibility="collapsed"
         )
         bm_nominee = st.radio(
             "2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?",
@@ -216,7 +216,7 @@ if survey_mode and not admin_mode:
                 "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)",
                 "Non ancora definito"
             ],
-            label_visibility="collapsed"
+            index=None, label_visibility="collapsed"
         )
 
         if st.form_submit_button("Invia"):
@@ -308,7 +308,7 @@ sections = {
             ("bm_yes_no", "1. Si è già provveduto a nominare l’AML Board Member?")
         ],
         "categorical": [
-            ("bm_nominee", "2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
+            ("bm_nominee", "2. Quale soggetto è stato nominato come AML Board Member?")
         ]
     }
 }
