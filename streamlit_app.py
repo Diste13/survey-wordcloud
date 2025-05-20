@@ -518,7 +518,7 @@ for section_title, content in sections.items():
             fig.update_xaxes(
                 ticktext=wrapped_labels,
                 tickvals=df["Opzione"],
-                tickfont=dict(size=14),
+                tickfont=dict(size=18),
                 automargin=True
             )
 
@@ -526,8 +526,8 @@ for section_title, content in sections.items():
             fig.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
-                margin=dict(t=20, b=200, l=50, r=20),
-                height=500
+                margin=dict(t=20, b=300, l=50, r=20),
+                height=600
             )
 
             st.plotly_chart(fig, use_container_width=True)
