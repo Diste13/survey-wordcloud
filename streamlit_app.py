@@ -380,7 +380,18 @@ for section_title, content in sections.items():
             st.subheader(question)
             df = {"Opzione": list(counts.keys()), "Conteggio": list(counts.values())}
             fig = px.bar(df, x="Opzione", y="Conteggio")
+
+            # Rimuovo titolo assi
+            fig.update_layout(
+                xaxis_title=None,
+                yaxis_title=None
+            )
+            # Disabilito le linee di griglia
+            fig.update_xaxes(showgrid=False)
+            fig.update_yaxes(showgrid=False)
+
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
+
