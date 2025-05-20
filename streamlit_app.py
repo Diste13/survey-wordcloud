@@ -339,7 +339,8 @@ for section_title, content in sections.items():
             # 2) Cento testo e percentuale (rispetto al totale di Sì+No)
             # 3) Imposto testo in bianco e di dimensione leggibile
             fig.update_traces(
-                hoverinfo="skip",
+                hoverinfo="none",
+                hovertemplate=None,
                 textinfo="label+percent parent",
                 textposition="middle center",
                 textfont=dict(size=30, color="white")
