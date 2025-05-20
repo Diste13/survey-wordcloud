@@ -153,37 +153,55 @@ if not survey_mode and not admin_mode:
     st.title("EU AML Package")
     survey_url = f"{app_url}?survey=1"
 
-    # Genera e mostra QR più piccolo
+    # Genera QR e base64
     qr = qrcode.make(survey_url)
     buf = io.BytesIO()
     qr.save(buf, format="PNG")
     buf.seek(0)
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
 
-    col1, col2, col3 = st.columns([1,3,1])
-    with col2:
-        st.image(buf, width=300)  # QR a 300px
+    # Override CSS: container full-width, centratura QR & URL
+    st.markdown(
+        """
+        <style>
+          /* Solo qui: elimina il max-width di 700px */
+          [data-testid="stAppViewContainer"] [data-testid="stBlockContainer"] {
+            max-width: none !important;
+            width: 100% !important;
+          }
+          .qr-container {
+            text-align: center;
+            margin: 0 auto;
+            padding: 40px 0;
+          }
+          .qr-container img {
+            width: 500px;
+            max-width: 80vw;
+            height: auto;
+          }
+          .survey-url {
+            font-size: 48px;
+            white-space: nowrap;
+            margin-top: 20px;
+          }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-        # URL grande, senza andare a capo
-        st.markdown(
-            f"""
-            <div style="
-                text-align: center;
-                font-size: 48px;
-                white-space: nowrap;
-                overflow-x: auto;
-                margin-top: 20px;
-            ">
-                {survey_url}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        # Link alternativo sotto
-        st.markdown(
-            f"<div style='text-align:center; margin-top:10px;'><a href='{survey_url}' target='_blank'>Apri il form</a></div>",
-            unsafe_allow_html=True
-        )
+    # Output QR + URL
+    st.markdown(
+        f"""
+        <div class="qr-container">
+          <img src="data:image/png;base64,{qr_b64}" alt="QR code" />
+          <div class="survey-url">{survey_url}</div>
+          <div style="margin-top:10px;">
+            <a href="{survey_url}" target="_blank">Apri il form</a>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.stop()
 
