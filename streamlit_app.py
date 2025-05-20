@@ -339,11 +339,10 @@ for section_title, content in sections.items():
             # 2) Cento testo e percentuale (rispetto al totale di Sì+No)
             # 3) Imposto testo in bianco e di dimensione leggibile
             fig.update_traces(
-                hoverinfo="none",
-                hovertemplate=None,
-                texttemplate="%{label}<br>%{percent entry:.0%}",
+                hoverinfo="skip",
+                textinfo="label+percent parent",
                 textposition="middle center",
-                textfont=dict(size=20, color="white")
+                textfont=dict(size=30, color="white")
             )
 
             # 4) Margini stretti
