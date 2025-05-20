@@ -105,15 +105,6 @@ st.markdown(
         margin: 0 auto 40px auto;
       }}
 
-      /* Card style */
-      .form-card {{
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        padding: 24px;
-        margin-bottom: 24px;
-      }}
-
       /* Buttons */
       [data-testid="stButton"] > button {{
         background-color: var(--primary, {PALETTE[0]}) !important;
@@ -190,7 +181,7 @@ if survey_mode and not admin_mode:
 
         col1, col2 = st.columns([3,1])
         with col1:
-            st.write("1. È stata già avviata una gap analysis su EU AML Package?")
+            st.write("**1. È stata già avviata una gap analysis su EU AML Package?**")
         with col2:
             gap_analysis = st.radio(
                 label="",
@@ -203,7 +194,7 @@ if survey_mode and not admin_mode:
 
         col1, col2 = st.columns([3,1])
         with col1:
-            st.write("2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?")
+            st.write("**2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?**")
         with col2:
             board_inform = st.radio(
                 label="",
@@ -216,7 +207,7 @@ if survey_mode and not admin_mode:
 
         col1, col2 = st.columns([3,1])
         with col1:
-            st.write("3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?")
+            st.write("**3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?**")
         with col2:
             budget = st.radio(
                 label="",
@@ -229,7 +220,7 @@ if survey_mode and not admin_mode:
 
         col1, col2 = st.columns([3,1])
         with col1:
-            st.write("4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?")
+            st.write("**4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?**")
         with col2:
             adeguamento_specifico = st.radio(
                 label="",
@@ -249,7 +240,7 @@ if survey_mode and not admin_mode:
         st.markdown("<div class='form-card'>", unsafe_allow_html=True)
         st.write("## 02. Principali impatti attesi da EU AML Package")
         impacts = st.multiselect(
-            label="1. Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo (selezionare fino a 3 opzioni)?",
+            label="**1. Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo (selezionare fino a 3 opzioni)?**",
             options=[
                 "Supervisione diretta", "Tempistiche di adeguamento", "Complessità del quadro normativo",
                 "Implementazioni informatiche", "AML Governance", "Risk assessment", "Data model",
@@ -273,7 +264,7 @@ if survey_mode and not admin_mode:
 
         col1, col2 = st.columns([3,1])
         with col1:
-            st.write("1. Si è già provveduto a nominare l’AML Board Member?")
+            st.write("**1. Si è già provveduto a nominare l’AML Board Member?**")
         with col2:
             bm_yes_no = st.radio(
                 label="",
@@ -286,7 +277,7 @@ if survey_mode and not admin_mode:
 
         col1, col2 = st.columns([3,1])
         with col1:
-            st.write("2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?")
+            st.write("**2. Quale soggetto è stato nominato (o si prevede di nominare) come AML Board Member?**")
         with col2:
             bm_nominee = st.radio(
                 label="",
