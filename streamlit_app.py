@@ -423,52 +423,53 @@ for section_title, content in sections.items():
     st.header(section_title)
 
     # Sì/No questions as treemap (con "Sì" sempre a sinistra)
-    counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
-    if counts:
-        # 1) Forza "Sì" come primo elemento
-        items = []
-        if "Sì" in counts:
-            items.append(("Sì", counts["Sì"]))
-        # aggiungi poi tutti gli altri
-        for k, v in counts.items():
-            if k != "Sì":
-                items.append((k, v))
-        df = {
-            "Risposta": [i[0] for i in items],
-            "Conteggio": [i[1] for i in items]
-        }
+    for key, question in content.get("yesno", []):
+        counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
+        if counts:
+            # 1) Forza "Sì" come primo elemento
+            items = []
+            if "Sì" in counts:
+                items.append(("Sì", counts["Sì"]))
+            # aggiungi poi tutti gli altri
+            for k, v in counts.items():
+                if k != "Sì":
+                    items.append((k, v))
+            df = {
+                "Risposta": [i[0] for i in items],
+                "Conteggio": [i[1] for i in items]
+            }
 
-        # 2) Definisci la mappa colori
-        color_map = {
-            "Sì": PALETTE[4],   # quinto colore
-            "No": PALETTE[1]    # secondo colore
-        }
+            # 2) Definisci la mappa colori
+            color_map = {
+                "Sì": PALETTE[4],   # quinto colore
+                "No": PALETTE[1]    # secondo colore
+            }
 
-        # 3) Costruisci il treemap senza ri‐ordinare e applica i colori
-        fig = px.treemap(
-            df,
-            path=[px.Constant(question), "Risposta"],
-            values="Conteggio",
-            color="Risposta",
-            color_discrete_map=color_map
-        )
-        # Disabilita l’ordinamento automatico
-        fig.data[0].sort = False
+            # 3) Costruisci il treemap senza ri‐ordinare e applica i colori
+            fig = px.treemap(
+                df,
+                path=[px.Constant(question), "Risposta"],
+                values="Conteggio",
+                color="Risposta",
+                color_discrete_map=color_map
+            )
+            # Disabilita l’ordinamento automatico
+            fig.data[0].sort = False
 
-        # Mantieni le tue impostazioni di text/font
-        fig.update_traces(
-            hoverinfo="none",
-            hovertemplate=None,
-            textinfo="label+percent parent",
-            textposition="middle center",
-            textfont=dict(size=30, color="white")
-        )
-        fig.update_layout(margin=dict(t=40, l=25, r=25, b=25))
+            # Mantieni le tue impostazioni di text/font
+            fig.update_traces(
+                hoverinfo="none",
+                hovertemplate=None,
+                textinfo="label+percent parent",
+                textposition="middle center",
+                textfont=dict(size=30, color="white")
+            )
+            fig.update_layout(margin=dict(t=40, l=25, r=25, b=25))
 
-        st.subheader(question)
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info(f"Nessuna risposta per '{question}'.")
+            st.subheader(question)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info(f"Nessuna risposta per '{question}'.")
 
     # Multiselect as WordCloud
     for key, question in content.get("multiselect", []):
