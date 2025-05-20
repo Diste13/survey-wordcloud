@@ -450,8 +450,8 @@ for section_title, content in sections.items():
                 df,
                 values="Conteggio",
                 color="Risposta",
-                color_discrete_map=color_map,
-                root_color= "white"
+                color_discrete_map=color_map
+                
             )
             # Disabilita l’ordinamento automatico
             fig.data[0].sort = False
