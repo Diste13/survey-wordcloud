@@ -197,7 +197,8 @@ if survey_mode and not admin_mode:
                 options=["Sì", "No"],
                 key="gap_analysis",
                 horizontal=True,
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                index=None
             )
 
         col1, col2 = st.columns([3,1])
@@ -209,7 +210,8 @@ if survey_mode and not admin_mode:
                 options=["Sì", "No"],
                 key="board_inform",
                 horizontal=True,
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                index=None
             )
 
         col1, col2 = st.columns([3,1])
@@ -221,7 +223,8 @@ if survey_mode and not admin_mode:
                 options=["Sì", "No"],
                 key="budget",
                 horizontal=True,
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                index=None
             )
 
         col1, col2 = st.columns([3,1])
@@ -233,7 +236,8 @@ if survey_mode and not admin_mode:
                 options=["Sì", "No"],
                 key="adeguamento_specifico",
                 horizontal=True,
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                index=None
             )
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -276,7 +280,8 @@ if survey_mode and not admin_mode:
                 options=["Sì", "No"],
                 key="bm_yes_no",
                 horizontal=True,
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                index=None
             )
 
         col1, col2 = st.columns([3,1])
@@ -292,7 +297,8 @@ if survey_mode and not admin_mode:
                     "Non ancora definito"
                 ],
                 key="bm_nominee",
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                index=None
             )
         st.markdown("</div>", unsafe_allow_html=True)
 
