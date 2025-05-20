@@ -164,7 +164,7 @@ if not survey_mode and not admin_mode:
         st.image(buf, width=800)
         # URL molto più grande sotto il QR
         st.markdown(
-            f"<div style='text-align:center; font-size:32px; word-break:break-all; margin-top:20px;'>{survey_url}</div>",
+            f"<div style='text-align:center; font-size:28px; word-break:break-all; margin-top:20px;'>{survey_url}</div>",
             unsafe_allow_html=True
         )
         # Link alternativo
@@ -193,7 +193,8 @@ if survey_mode and not admin_mode:
             options=["Sì", "No"],
             key="gap_analysis",
             horizontal=False,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index=None
         )
 
         # 2.
@@ -203,7 +204,8 @@ if survey_mode and not admin_mode:
             options=["Sì", "No"],
             key="board_inform",
             horizontal=False,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index=None
         )
 
         # 3.
@@ -213,7 +215,8 @@ if survey_mode and not admin_mode:
             options=["Sì", "No"],
             key="budget",
             horizontal=False,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index=None
         )
 
         # 4.
@@ -223,7 +226,8 @@ if survey_mode and not admin_mode:
             options=["Sì", "No"],
             key="adeguamento_specifico",
             horizontal=False,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index=None
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -262,7 +266,8 @@ if survey_mode and not admin_mode:
             options=["Sì", "No"],
             key="bm_yes_no",
             horizontal=False,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index=None
         )
 
         # 2.
@@ -277,7 +282,8 @@ if survey_mode and not admin_mode:
             ],
             key="bm_nominee",
             horizontal=False,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            index=None
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
