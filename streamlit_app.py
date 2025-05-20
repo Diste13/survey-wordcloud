@@ -9,7 +9,7 @@ from uuid import uuid4
 from datetime import datetime
 from collections import Counter
 import random
-
+import textwrap
 import streamlit as st
 import qrcode
 import plotly.express as px
@@ -487,29 +487,48 @@ for section_title, content in sections.items():
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
 
-    # --- Categorical as horizontal bar chart ---
+ 
+
+# --- Categorical as wrapped vertical bar chart ---
     for key, question in content.get("categorical", []):
         counts = Counter(r.get(key) for r in responses if r.get(key))
         if counts:
             st.subheader(question)
+            # 1) DataFrame
             df = {"Opzione": list(counts.keys()), "Conteggio": list(counts.values())}
 
+            # 2) Crea etichette con a capo ogni 15 caratteri circa
+            wrapped_labels = [
+                "<br>".join(textwrap.wrap(op, width=15))
+                for op in df["Opzione"]
+            ]
+
+            # 3) Bar chart verticale
             fig = px.bar(
                 df,
-                x="Conteggio",
-                y="Opzione",
-                orientation="h",            # ← orientamento orizzontale
+                x="Opzione",
+                y="Conteggio"
             )
-            fig.update_xaxes(tickformat=".0f", showgrid=False)
-            # aumenta un po' il margine sinistro per non tagliare i label
+            fig.update_yaxes(
+                tickformat=".0f",
+                showgrid=False
+            )
+
+            # 4) Sostituisci ticktext e abilit a automargin
+            fig.update_xaxes(
+                ticktext=wrapped_labels,
+                tickvals=df["Opzione"],
+                tickfont=dict(size=14),
+                automargin=True
+            )
+
+            # 5) Margini più alti in basso per le etichette  
             fig.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
-                margin=dict(l=200, t=20, b=20, r=20),
-                height=400                  # regola l'altezza a piacere
+                margin=dict(t=20, b=200, l=50, r=20),
+                height=500
             )
-            # ingrandisci i label verticali
-            fig.update_yaxes(tickfont=dict(size=16), automargin=True)
 
             st.plotly_chart(fig, use_container_width=True)
         else:
