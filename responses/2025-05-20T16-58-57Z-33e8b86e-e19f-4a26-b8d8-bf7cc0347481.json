@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "No",
+  "board_inform": "No",
+  "budget": "Sì",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "Data model",
+    "Know your customer",
+    "Supervisione diretta"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Non ancora definito"
+}
