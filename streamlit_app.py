@@ -1,3 +1,4 @@
+# streamlit_app.py
 import streamlit as st
 from datetime import datetime
 from uuid import uuid4
@@ -197,9 +198,7 @@ if survey_mode and not admin_mode:
             label_visibility="collapsed",
             index=None
         )
-        bm_notes = None
-        if bm_nominee and bm_nominee.startswith("Altro"):
-            bm_notes = st.text_area("Specifica qui nelle note:")
+
 
         # — Domanda 3 —
         st.write("## 3) Principali preoccupazioni ed impatti - AML Package (max 3)")
@@ -235,7 +234,6 @@ if survey_mode and not admin_mode:
             record = {
                 "bm_yes_no": bm_yes_no,
                 "bm_nominee": bm_nominee,
-                "bm_notes": bm_notes,
                 "impacts": impacts
             }
             ts = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%SZ")
@@ -251,7 +249,6 @@ if survey_mode and not admin_mode:
                 new_resp = Response(
                     bm_yes_no=bm_yes_no,
                     bm_nominee=bm_nominee,
-                    bm_notes=bm_notes,
                     impacts=impacts          # lista Python, no json.dumps
                 )
                 session.add(new_resp)
@@ -283,7 +280,6 @@ def load_responses():
         return [
              {"bm_yes_no": r.bm_yes_no,
               "bm_nominee": r.bm_nominee,
-              "bm_notes": r.bm_notes,
               "impacts":   r.impacts}
             for r in rows
          ]
@@ -313,18 +309,10 @@ for q_key, title, label in [
         st.info(f"Nessuna risposta per la domanda {q_key}.")
     st.write("---")
 
-# ----------------------------------------------------------------
-# 10) Notes for 'Altro'
-# ----------------------------------------------------------------
-notes_list = [r["bm_notes"] for r in data if r.get("bm_notes")]
-if notes_list:
-    st.subheader("Note EU AML Package - AML Board Member")
-    for note in notes_list:
-        st.write(f"- {note}")
-    st.write("---")
+
 
 # ----------------------------------------------------------------
-# 11) WordCloud for Q3
+# 10) WordCloud for Q3
 # ----------------------------------------------------------------
 freqs = Counter(choice for r in data for choice in r.get("impacts", []))
 if freqs:

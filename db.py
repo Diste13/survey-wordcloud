@@ -20,9 +20,8 @@ class Response(Base):
     __tablename__ = "responses"
     id         = Column(Integer, primary_key=True, index=True)
     timestamp  = Column(DateTime, default=datetime.utcnow)
-    bm_yes_no  = Column(String, nullable=False)
-    bm_nominee = Column(String, nullable=False)
-    bm_notes   = Column(String, nullable=True)
+    bm_yes_no  = Column(String, nullable=True)
+    bm_nominee = Column(String, nullable=True)
     impacts    = Column(JSON,   nullable=True)   # <— JSON nativo
 
 def init_db():
