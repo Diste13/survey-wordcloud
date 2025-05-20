@@ -367,7 +367,7 @@ if survey_mode and not admin_mode:
 # ----------------------------------------------------------------
 # 8) Admin Dashboard
 # ----------------------------------------------------------------
-st.title("EU AML Package - Admin")
+st.title("EU AML Package")
 st.markdown(f"[Torna alla QR page]({app_url})")
 st.write("---")
 
