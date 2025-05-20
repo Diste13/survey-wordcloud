@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "No",
+  "budget": "Sì",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "Outsourcing",
+    "Protezione e condivisione dei dati",
+    "Misure amministrative e sanzioni"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Amministratore Delegato"
+}
