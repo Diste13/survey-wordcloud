@@ -161,10 +161,10 @@ if not survey_mode and not admin_mode:
 
     col1, col2, col3 = st.columns([1,3,1])
     with col2:
-        st.image(buf, width=800)
+        st.image(buf, use_column_width=True)
         # URL molto più grande sotto il QR
         st.markdown(
-            f"<div style='text-align:center; font-size:28px; word-break:break-all; margin-top:20px;'>{survey_url}</div>",
+            f"<div style='text-align:center; font-size:32px; word-break:break-all; margin-top:20px;'>{survey_url}</div>",
             unsafe_allow_html=True
         )
         # Link alternativo
