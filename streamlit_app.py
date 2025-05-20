@@ -175,8 +175,8 @@ if not survey_mode and not admin_mode:
             padding: 40px 0;
           }
           .qr-container img {
-            width: 500px;
-            max-width: 80vw;
+            width: 700px;
+            max-width: 90vw;
             height: auto;
           }
           .survey-url {
