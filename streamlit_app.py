@@ -123,7 +123,7 @@ st.markdown(
 
       /* Progress bar */
       .stProgress > div > div > div {{
-        background-color: var(--secondary, {PALETTE[1]}) !important;
+        background-color: var(--secondary, {PALETTE[6]}) !important;
       }}
     </style>
     """,
