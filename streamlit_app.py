@@ -487,26 +487,30 @@ for section_title, content in sections.items():
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
 
-    # --- Categorical as bar chart --- 
+    # --- Categorical as horizontal bar chart ---
     for key, question in content.get("categorical", []):
         counts = Counter(r.get(key) for r in responses if r.get(key))
         if counts:
             st.subheader(question)
             df = {"Opzione": list(counts.keys()), "Conteggio": list(counts.values())}
-            fig = px.bar(df, x="Opzione", y="Conteggio")
-            fig.update_yaxes(tickformat=".0f", showgrid=False)
 
-            # qui abbiamo ingrandito i label dell'asse X a 20px
-            fig.update_xaxes(
-                tickfont=dict(size=20),  # <— metti il valore che preferisci
-                showgrid=False
+            fig = px.bar(
+                df,
+                x="Conteggio",
+                y="Opzione",
+                orientation="h",            # ← orientamento orizzontale
             )
-
+            fig.update_xaxes(tickformat=".0f", showgrid=False)
+            # aumenta un po' il margine sinistro per non tagliare i label
             fig.update_layout(
                 xaxis_title=None,
                 yaxis_title=None,
-                margin=dict(t=20, b=80)
+                margin=dict(l=200, t=20, b=20, r=20),
+                height=400                  # regola l'altezza a piacere
             )
+            # ingrandisci i label verticali
+            fig.update_yaxes(tickfont=dict(size=16), automargin=True)
+
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info(f"Nessuna risposta per '{question}'.")
