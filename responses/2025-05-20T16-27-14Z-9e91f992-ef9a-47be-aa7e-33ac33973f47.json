@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "Sì",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "AML Governance",
+    "Misure amministrative e sanzioni",
+    "Outsourcing"
+  ],
+  "bm_yes_no": null,
+  "bm_nominee": "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)"
+}
