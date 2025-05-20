@@ -422,11 +422,11 @@ sections = {
 for section_title, content in sections.items():
     st.header(section_title)
 
-    # --- Sì/No questions as treemap (con "Sì" sempre a sinistra) ---
+    # --- Sì/No questions as treemap ---
     for key, question in content.get("yesno", []):
         counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
         if counts:
-            # 1) Ordine manuale: Sì sempre primo
+            # 1) Ordina manualmente: "Sì" sempre primo
             items = []
             if "Sì" in counts:
                 items.append(("Sì", counts["Sì"]))
@@ -442,7 +442,7 @@ for section_title, content in sections.items():
             # 2) Mappa colori
             color_map = {"Sì": PALETTE[4], "No": PALETTE[1]}
 
-            # 3) Treemap a un solo livello
+            # 3) Treemap a un livello
             fig = px.treemap(
                 df,
                 path=["Risposta"],
@@ -451,11 +451,11 @@ for section_title, content in sections.items():
                 color_discrete_map=color_map
             )
 
-            # 4) Disabilita sorting e bordi
+            # 4) Disabilita sorting e azzera il bordo
             fig.data[0].sort = False
-            fig.data[0].marker.line_width = 0
+            fig.data[0].marker.line.width = 0
 
-            # 5) Testo
+            # 5) Configura il testo
             fig.update_traces(
                 hoverinfo="none",
                 hovertemplate=None,
@@ -492,7 +492,7 @@ for section_title, content in sections.items():
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
 
-    # --- Categorical as bar chart (senza decimali, label x più grandi) ---
+    # --- Categorical as bar chart ---
     for key, question in content.get("categorical", []):
         counts = Counter(r.get(key) for r in responses if r.get(key))
         if counts:
