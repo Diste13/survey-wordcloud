@@ -427,12 +427,7 @@ for section_title, content in sections.items():
         counts = Counter(r.get(key) for r in responses if r.get(key) is not None)
         if counts:
             # 1) Ordina manualmente: "Sì" sempre primo
-            items = []
-            if "Sì" in counts:
-                items.append(("Sì", counts["Sì"]))
-            for k, v in counts.items():
-                if k != "Sì":
-                    items.append((k, v))
+            items = sorted(counts.items(), key=lambda kv: kv[0], reverse=True)
 
             df = {
                 "Risposta": [i[0] for i in items],
