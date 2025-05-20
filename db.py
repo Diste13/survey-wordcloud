@@ -18,11 +18,16 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 class Response(Base):
     __tablename__ = "responses"
-    id         = Column(Integer, primary_key=True, index=True)
-    timestamp  = Column(DateTime, default=datetime.utcnow)
-    bm_yes_no  = Column(String, nullable=True)
-    bm_nominee = Column(String, nullable=True)
-    impacts    = Column(JSON,   nullable=True)   # <— JSON nativo
+    id                   = Column(Integer, primary_key=True, index=True)
+    timestamp            = Column(DateTime, default=datetime.utcnow)
+    gap_analysis         = Column(String, nullable=True)
+    board_inform         = Column(String, nullable=True)
+    budget               = Column(String, nullable=True)
+    adeguamento_specifico= Column(String, nullable=True)
+    impacts              = Column(JSON,   nullable=True)
+    bm_yes_no            = Column(String, nullable=True)
+    bm_nominee           = Column(String, nullable=True)
+
 
 def init_db():
     Base.metadata.create_all(bind=engine)
