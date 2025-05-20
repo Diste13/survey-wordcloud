@@ -306,7 +306,7 @@ for q_key, title, label in [
         st.subheader(title)
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info(f"Nessuna risposta per la domanda {q_key}.")
+        st.info(f"Nessuna risposta per la domanda.")
     st.write("---")
 
 
