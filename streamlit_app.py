@@ -233,7 +233,7 @@ if survey_mode and not admin_mode:
         )
 
         # 2.
-        st.write("**2. L’organo amministrativo è stato già coinvolto il Consiglio di Amministrazione per informarlo dell'avvio dell’AML Package e delle imminenti novità normative in materia?**")
+        st.write("**2. Il Consiglio di Amministrazione è stato già informato dell’avvio dell’EU AML Package e delle imminenti novità normative in materia?**")
         board_inform = st.radio(
             label="",
             options=["Sì", "No"],
@@ -255,7 +255,7 @@ if survey_mode and not admin_mode:
         )
 
         # 4.
-        st.write("**4. Avete già avviato attività di adeguamento su requisiti specifici definiti dell’EU AML Package?**")
+        st.write("**4. Avete già avviato attività di adeguamento su requisiti specifici definiti dall’EU AML Package?**")
         adeguamento_specifico = st.radio(
             label="",
             options=["Sì", "No"],
@@ -271,13 +271,13 @@ if survey_mode and not admin_mode:
 
         # Section 2
         st.markdown("<div class='form-card'>", unsafe_allow_html=True)
-        st.write("## 02. Principali impatti attesi da EU AML Package")
+        st.write("## 02. Principali impatti attesi dall'EU AML Package")
         impacts = st.multiselect(
             label="**1. Quali sono le principali preoccupazioni ed impatti attesi dal nuovo quadro normativo (selezionare fino a 3 opzioni)?**",
             options=[
                 "Supervisione diretta", "Tempistiche di adeguamento", "Complessità del quadro normativo",
                 "Implementazioni informatiche", "AML Governance", "Risk assessment", "Data model",
-                "Know your customer", "Transaction monitoring", "Targeted Financial sanctions",
+                "Know your customer", "Transaction monitoring", "Targeted financial sanctions",
                 "Paesi terzi ad alto rischio", "Requisiti sulla titolarità effettiva",
                 "Protezione e condivisione dei dati", "Outsourcing", "Misure amministrative e sanzioni",
                 "Nessun impatto identificato al momento"
