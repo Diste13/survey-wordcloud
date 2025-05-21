@@ -478,6 +478,7 @@ for section_title, content in sections.items():
             wc = WordCloud(
                 width=1600, height=800, scale=4, background_color="white",
                 color_func=lambda *args, **kwargs: random.choice(PALETTE),
+                prefer_horizontal= 0.7,
                 collocations=False,
                 font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
                 max_words=100
