@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "No",
+  "board_inform": "Sì",
+  "budget": "No",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "AML Governance",
+    "Complessità del quadro normativo",
+    "Misure amministrative e sanzioni"
+  ],
+  "bm_yes_no": "No",
+  "bm_nominee": "Amministratore Delegato"
+}
