@@ -398,7 +398,7 @@ if not responses:
 sections = {
     "01. Adeguamento ad EU AML Package": {
         "yesno": [
-            ("gap_analysis", "1. È stata già avviata una gap analysis su EU AML Package?"),
+            ("gap_analysis", "1. È stata già avviata una gap analysis sull'EU AML Package?"),
             ("board_inform", "2. Il Consiglio di Amministrazione è stato già informato dell’avvio dell’EU AML Package e delle imminenti novità normative in materia?"),
             ("budget", "3. È stato già stanziato del budget dedicato alle attività di adeguamento all’EU AML Package?"),
             ("adeguamento_specifico", "4. Avete già avviato attività di adeguamento su requisiti specifici definiti dall’EU AML Package?")
