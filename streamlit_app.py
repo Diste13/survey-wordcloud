@@ -222,7 +222,7 @@ if survey_mode and not admin_mode:
         st.write("## 01. Adeguamento ad EU AML Package")
 
         # 1.
-        st.write("**1. È stata già avviata una gap analysis su EU AML Package?**")
+        st.write("**1. È stata già avviata una gap analysis sull'EU AML Package?**")
         gap_analysis = st.radio(
             label="",
             options=["Sì", "No"],
