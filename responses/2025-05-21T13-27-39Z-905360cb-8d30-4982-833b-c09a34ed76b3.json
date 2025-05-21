@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "No",
+  "board_inform": "Sì",
+  "budget": "Sì",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "Tempistiche di adeguamento",
+    "Implementazioni informatiche",
+    "Outsourcing"
+  ],
+  "bm_yes_no": "No",
+  "bm_nominee": "Amministratore Delegato"
+}
