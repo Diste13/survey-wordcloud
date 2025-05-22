@@ -497,7 +497,7 @@ for key, question in content.get("categorical", []):
     if counts:
         st.subheader(question)
         
-        # 1) Prepara il DataFrame con conteggio e percentuale
+        # Costruisci DataFrame
         df = pd.DataFrame({
             "Opzione": list(counts.keys()),
             "Conteggio": list(counts.values())
@@ -505,13 +505,13 @@ for key, question in content.get("categorical", []):
         totale = df["Conteggio"].sum()
         df["Percentuale"] = df["Conteggio"] / totale * 100
 
-        # 2) Etichette spezzate
+        # Etichette spezzate
         wrapped_labels = [
             "<br>".join(textwrap.wrap(op, width=15))
             for op in df["Opzione"]
         ]
 
-        # 3) Crea il bar chart con customdata
+        # Bar chart con custom_data per la percentuale
         fig = px.bar(
             df,
             x="Opzione",
@@ -519,13 +519,14 @@ for key, question in content.get("categorical", []):
             custom_data=["Percentuale"]
         )
 
-        # 4) Aggiungi testo all’interno delle barre
+        # Testo al centro, font e size come nel treemap
         fig.update_traces(
             texttemplate="%{y}<br>(%{customdata[0]:.1f}%)",
-            textposition="inside"
+            textposition="inside",
+            textfont=dict(size=30, color="white")
         )
 
-        # 5) Formatta assi e layout
+        # Assi e layout
         fig.update_yaxes(
             tickformat=".0f",
             showgrid=False
