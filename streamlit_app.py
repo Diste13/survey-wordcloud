@@ -430,46 +430,49 @@ for section_title, content in sections.items():
             # 1) Ordina manualmente: "Sì" sempre primo
             items = sorted(counts.items(), key=lambda kv: kv[0], reverse=True)
 
-            df = {
+            df = pd.DataFrame({
                 "Risposta": [i[0] for i in items],
                 "Conteggio": [i[1] for i in items]
-            }
+            })
 
             # 2) Mappa colori
             color_map = {"Sì": PALETTE[4], "No": PALETTE[1]}
 
-            # 3) Treemap a un livello
-            fig = px.treemap(
+            # 3) Donut chart
+            fig = px.pie(
                 df,
-                path=["Risposta"],
+                names="Risposta",
                 values="Conteggio",
+                hole=0.5,
                 color="Risposta",
                 color_discrete_map=color_map
             )
-
-            # 4) Disabilita sorting e azzera il bordo
-            fig.data[0].sort = False
-            fig.data[0].marker.line.width = 0
-
-            # 5) Configura il testo
             fig.update_traces(
-                hoverinfo="none",
-                hovertemplate=None,
-                textinfo="label+percent entry",
-                textposition="middle center",
-                textfont=dict(size=30, color="white")
+                textinfo="label+percent",
+                textposition="inside",
+                textfont=dict(size=24, color="white"),
+                marker=dict(line=dict(width=0))
             )
-            fig.update_layout(margin=dict(t=10, l=10, r=10, b=10))
+            fig.update_layout(
+                margin=dict(t=20, l=20, r=20, b=20),
+                showlegend=False
+            )
 
             st.subheader(question)
-            st.plotly_chart(
-                fig,
-                use_container_width=True,
-                key=f"treemap-{section_title}-{key}"
-            )
+            # 4) Centriamo la torta con st.columns
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.plotly_chart(
+                    fig,
+                    use_container_width=False,
+                    width=400,
+                    height=400,
+                    key=f"donut-{section_title}-{key}"
+                )
         else:
             st.info(f"Nessuna risposta per '{question}'.")
         st.write("---")
+
 
     # --- Multiselect as WordCloud ---
     for key, question in content.get("multiselect", []):
