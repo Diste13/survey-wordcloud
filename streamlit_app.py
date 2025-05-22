@@ -14,6 +14,7 @@ import streamlit as st
 import qrcode
 import plotly.express as px
 from wordcloud import WordCloud
+import pandas as pd
 from github import Github, GithubException
 
 from db import init_db, SessionLocal, Response
@@ -491,47 +492,58 @@ for section_title, content in sections.items():
  
 
 # --- Categorical as wrapped vertical bar chart ---
-    for key, question in content.get("categorical", []):
-        counts = Counter(r.get(key) for r in responses if r.get(key))
-        if counts:
-            st.subheader(question)
-            # 1) DataFrame
-            df = {"Opzione": list(counts.keys()), "Conteggio": list(counts.values())}
+for key, question in content.get("categorical", []):
+    counts = Counter(r.get(key) for r in responses if r.get(key))
+    if counts:
+        st.subheader(question)
+        
+        # 1) Prepara il DataFrame con conteggio e percentuale
+        df = pd.DataFrame({
+            "Opzione": list(counts.keys()),
+            "Conteggio": list(counts.values())
+        })
+        totale = df["Conteggio"].sum()
+        df["Percentuale"] = df["Conteggio"] / totale * 100
 
-            # 2) Crea etichette con a capo ogni 15 caratteri circa
-            wrapped_labels = [
-                "<br>".join(textwrap.wrap(op, width=15))
-                for op in df["Opzione"]
-            ]
+        # 2) Etichette spezzate
+        wrapped_labels = [
+            "<br>".join(textwrap.wrap(op, width=15))
+            for op in df["Opzione"]
+        ]
 
-            # 3) Bar chart verticale
-            fig = px.bar(
-                df,
-                x="Opzione",
-                y="Conteggio"
-            )
-            fig.update_yaxes(
-                tickformat=".0f",
-                showgrid=False
-            )
+        # 3) Crea il bar chart con customdata
+        fig = px.bar(
+            df,
+            x="Opzione",
+            y="Conteggio",
+            custom_data=["Percentuale"]
+        )
 
-            # 4) Sostituisci ticktext e abilit a automargin
-            fig.update_xaxes(
-                ticktext=wrapped_labels,
-                tickvals=df["Opzione"],
-                tickfont=dict(size=18),
-                automargin=True
-            )
+        # 4) Aggiungi testo all’interno delle barre
+        fig.update_traces(
+            texttemplate="%{y}<br>(%{customdata[0]:.1f}%)",
+            textposition="inside"
+        )
 
-            # 5) Margini più alti in basso per le etichette  
-            fig.update_layout(
-                xaxis_title=None,
-                yaxis_title=None,
-                margin=dict(t=20, b=300, l=50, r=20),
-                height=600
-            )
+        # 5) Formatta assi e layout
+        fig.update_yaxes(
+            tickformat=".0f",
+            showgrid=False
+        )
+        fig.update_xaxes(
+            ticktext=wrapped_labels,
+            tickvals=df["Opzione"],
+            tickfont=dict(size=18),
+            automargin=True
+        )
+        fig.update_layout(
+            xaxis_title=None,
+            yaxis_title=None,
+            margin=dict(t=20, b=300, l=50, r=20),
+            height=600
+        )
 
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info(f"Nessuna risposta per '{question}'.")
-        st.write("---")
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info(f"Nessuna risposta per '{question}'.")
+    st.write("---")
