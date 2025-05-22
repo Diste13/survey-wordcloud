@@ -521,8 +521,9 @@ for key, question in content.get("categorical", []):
 
         # Testo al centro, font e size come nel treemap
         fig.update_traces(
-            texttemplate="%{y}<br>(%{customdata[0]:.1f}%)",
+            texttemplate="%{y}<br>%{customdata[0]:.1f}%",
             textposition="inside",
+            insidetextanchor="middle",
             textfont=dict(size=30, color="white")
         )
 
