@@ -437,8 +437,8 @@ for section_title, content in sections.items():
 
             # 2) Mappa colori con trasparenza per il fill, colori solidi per il bordo
             color_map_fill = {
-                "Sì": "rgba(0, 184, 245, 0.8)",  # 30% opacity
-                "No": "rgba(30, 73, 226, 0.8)"
+                "Sì": "rgba(0, 184, 245, 0.7)",  # 30% opacity
+                "No": "rgba(30, 73, 226, 0.7)"
             }
             color_map_border = {
                 "Sì": PALETTE[4],
@@ -516,10 +516,10 @@ for key, question in content.get("categorical", []):
         
         # 1) Definisci mappe colori
         color_fill_map = {
-            "Amministratore Delegato":  "rgba(0, 184, 245, 0.1)",
-            "Altro membro esecutivo del Consiglio di Amministrazione": "rgba(114, 16, 234, 0.1)",
-            "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)": "rgba(253, 52, 156, 0.1)",
-            "Non ancora definito": "rgba(0, 51, 141, 0.1)"
+            "Amministratore Delegato":  "rgba(0, 184, 245, 0.7)",
+            "Altro membro esecutivo del Consiglio di Amministrazione": "rgba(114, 16, 234, 0.7)",
+            "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)": "rgba(253, 52, 156, 0.7)",
+            "Non ancora definito": "rgba(0, 51, 141, 0.7)"
         }
         color_border_map = {
             "Amministratore Delegato":  PALETTE[4],
