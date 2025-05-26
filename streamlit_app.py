@@ -437,8 +437,8 @@ for section_title, content in sections.items():
 
             # 2) Mappa colori con trasparenza per il fill, colori solidi per il bordo
             color_map_fill = {
-                "Sì": "rgba(0, 184, 245, 0.3)",  # 30% opacity
-                "No": "rgba(30, 73, 226, 0.3)"
+                "Sì": "rgba(0, 184, 245, 0.1)",  # 30% opacity
+                "No": "rgba(30, 73, 226, 0.1)"
             }
             color_map_border = {
                 "Sì": PALETTE[4],
@@ -514,7 +514,21 @@ for key, question in content.get("categorical", []):
     if counts:
         st.subheader(question)
         
-        # Costruisci DataFrame
+        # 1) Definisci mappe colori
+        color_fill_map = {
+            "Amministratore Delegato":  "rgba(0, 184, 245, 0.1)",
+            "Altro membro esecutivo del Consiglio di Amministrazione": "rgba(114, 16, 234, 0.1)",
+            "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)": "rgba(253, 52, 156, 0.1)",
+            "Non ancora definito": "rgba(0, 51, 141, 0.1)"
+        }
+        color_border_map = {
+            "Amministratore Delegato":  PALETTE[4],
+            "Altro membro esecutivo del Consiglio di Amministrazione": PALETTE[5],
+            "Membro non esecutivo del Consiglio di Amministrazione (che diventa esecutivo a seguito della nomina)": PALETTE[6],
+            "Non ancora definito": PALETTE[0]
+        }
+
+        # 2) Crea il DataFrame (come già fai tu)
         df = pd.DataFrame({
             "Opzione": list(counts.keys()),
             "Conteggio": list(counts.values())
@@ -522,13 +536,7 @@ for key, question in content.get("categorical", []):
         totale = df["Conteggio"].sum()
         df["Percentuale"] = df["Conteggio"] / totale * 100
 
-        # Etichette spezzate
-        wrapped_labels = [
-            "<br>".join(textwrap.wrap(op, width=15))
-            for op in df["Opzione"]
-        ]
-
-        # Bar chart con custom_data per la percentuale
+        # 3) Costruisci il bar chart senza color mapping automatico
         fig = px.bar(
             df,
             x="Opzione",
@@ -536,21 +544,28 @@ for key, question in content.get("categorical", []):
             custom_data=["Percentuale"]
         )
 
-        # Testo al centro, font e size come nel treemap
+        # 4) Applica fill trasparente e bordo pieno
         fig.update_traces(
+            marker=dict(
+                color=[color_fill_map[opt] for opt in df["Opzione"]],
+                line=dict(
+                    color=[color_border_map[opt] for opt in df["Opzione"]],
+                    width=4
+                )
+            ),
             texttemplate="%{y}<br>%{customdata[0]:.1f}%",
             textposition="inside",
             insidetextanchor="middle",
             textfont=dict(size=30, color="white")
         )
 
-        # Assi e layout
+        # 5) Mantieni il resto del layout
         fig.update_yaxes(
             tickformat=".0f",
             showgrid=False
         )
         fig.update_xaxes(
-            ticktext=wrapped_labels,
+            ticktext=["<br>".join(textwrap.wrap(op, width=15)) for op in df["Opzione"]],
             tickvals=df["Opzione"],
             tickfont=dict(size=18),
             automargin=True
@@ -562,7 +577,9 @@ for key, question in content.get("categorical", []):
             height=600
         )
 
+        # 6) Mostra il grafico
         st.plotly_chart(fig, use_container_width=True)
+
     else:
         st.info(f"Nessuna risposta per '{question}'.")
     st.write("---")
