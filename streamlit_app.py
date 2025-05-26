@@ -435,24 +435,38 @@ for section_title, content in sections.items():
                 "Conteggio": [i[1] for i in items]
             })
 
-            # 2) Mappa colori
-            color_map = {"Sì": PALETTE[4], "No": PALETTE[1]}
+            # 2) Mappa colori con trasparenza per il fill, colori solidi per il bordo
+            color_map_fill = {
+                "Sì": "rgba(0, 184, 245, 0.3)",  # 30% opacity
+                "No": "rgba(30, 73, 226, 0.3)"
+            }
+            color_map_border = {
+                "Sì": PALETTE[4],
+                "No": PALETTE[1]
+            }
 
-            # 3) Donut chart
+            # 3) Donut chart con fill trasparente
             fig = px.pie(
                 df,
                 names="Risposta",
                 values="Conteggio",
                 hole=0.5,
                 color="Risposta",
-                color_discrete_map=color_map
+                color_discrete_map=color_map_fill
             )
             fig.update_traces(
+                # bordo pieno, 4px
+                marker=dict(
+                    line=dict(
+                        color=[color_map_border[label] for label in df["Risposta"]],
+                        width=4
+                    )
+                ),
                 textinfo="label+percent",
                 textposition="inside",
-                textfont=dict(size=24, color="white"),
-                marker=dict(line=dict(width=0))
+                textfont=dict(size=24, color="white")
             )
+
             fig.update_layout(
                 margin=dict(t=20, l=20, r=20, b=20),
                 showlegend=False
