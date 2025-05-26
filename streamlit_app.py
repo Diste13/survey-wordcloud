@@ -437,8 +437,8 @@ for section_title, content in sections.items():
 
             # 2) Mappa colori con trasparenza per il fill, colori solidi per il bordo
             color_map_fill = {
-                "Sì": "rgba(0, 184, 245, 0.1)",  # 30% opacity
-                "No": "rgba(30, 73, 226, 0.1)"
+                "Sì": "rgba(0, 184, 245, 0.8)",  # 30% opacity
+                "No": "rgba(30, 73, 226, 0.8)"
             }
             color_map_border = {
                 "Sì": PALETTE[4],
