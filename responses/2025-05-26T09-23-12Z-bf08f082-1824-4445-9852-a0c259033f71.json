@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "No",
+  "board_inform": "No",
+  "budget": "No",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "AML Governance",
+    "Data model",
+    "Risk assessment"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Amministratore Delegato"
+}
