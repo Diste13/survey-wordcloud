@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "Sì",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "Implementazioni informatiche",
+    "AML Governance",
+    "Risk assessment"
+  ],
+  "bm_yes_no": "No",
+  "bm_nominee": "Non ancora definito"
+}
