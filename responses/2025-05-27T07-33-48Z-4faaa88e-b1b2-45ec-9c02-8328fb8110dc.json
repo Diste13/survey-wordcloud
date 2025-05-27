@@ -1,0 +1,13 @@
+{
+  "gap_analysis": null,
+  "board_inform": null,
+  "budget": null,
+  "adeguamento_specifico": null,
+  "impacts": [
+    "Supervisione diretta",
+    "Data model",
+    "Risk assessment"
+  ],
+  "bm_yes_no": null,
+  "bm_nominee": null
+}
