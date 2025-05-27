@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "No",
+  "budget": "Sì",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "Risk assessment",
+    "Data model",
+    "Know your customer"
+  ],
+  "bm_yes_no": "No",
+  "bm_nominee": "Altro membro esecutivo del Consiglio di Amministrazione"
+}
