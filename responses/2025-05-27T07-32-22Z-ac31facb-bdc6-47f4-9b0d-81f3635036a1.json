@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "No",
+  "budget": "No",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "Outsourcing",
+    "Transaction monitoring",
+    "Targeted financial sanctions"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Amministratore Delegato"
+}
