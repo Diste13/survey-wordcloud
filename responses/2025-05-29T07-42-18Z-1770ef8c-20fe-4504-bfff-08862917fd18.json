@@ -1,0 +1,12 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "Sì",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "Implementazioni informatiche",
+    "Data model"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Amministratore Delegato"
+}
