@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "Sì",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "Tempistiche di adeguamento",
+    "Implementazioni informatiche",
+    "Know your customer"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Altro membro esecutivo del Consiglio di Amministrazione"
+}
