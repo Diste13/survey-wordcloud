@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "Sì",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "Complessità del quadro normativo",
+    "Implementazioni informatiche",
+    "Know your customer"
+  ],
+  "bm_yes_no": "No",
+  "bm_nominee": "Non ancora definito"
+}
