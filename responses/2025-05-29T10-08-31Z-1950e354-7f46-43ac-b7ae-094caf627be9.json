@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "No",
+  "board_inform": "Sì",
+  "budget": "No",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "Implementazioni informatiche",
+    "Outsourcing",
+    "Transaction monitoring"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Altro membro esecutivo del Consiglio di Amministrazione"
+}
