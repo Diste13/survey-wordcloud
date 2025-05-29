@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "Sì",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "AML Governance",
+    "Targeted financial sanctions",
+    "Implementazioni informatiche"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Amministratore Delegato"
+}
