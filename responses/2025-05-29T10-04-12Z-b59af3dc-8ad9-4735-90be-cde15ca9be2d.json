@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "No",
+  "adeguamento_specifico": "No",
+  "impacts": [
+    "Implementazioni informatiche",
+    "Data model",
+    "Transaction monitoring"
+  ],
+  "bm_yes_no": "No",
+  "bm_nominee": "Non ancora definito"
+}
