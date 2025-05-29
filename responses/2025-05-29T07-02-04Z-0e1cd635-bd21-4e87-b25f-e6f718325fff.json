@@ -1,0 +1,13 @@
+{
+  "gap_analysis": "Sì",
+  "board_inform": "Sì",
+  "budget": "No",
+  "adeguamento_specifico": "Sì",
+  "impacts": [
+    "Tempistiche di adeguamento",
+    "Complessità del quadro normativo",
+    "Implementazioni informatiche"
+  ],
+  "bm_yes_no": "Sì",
+  "bm_nominee": "Amministratore Delegato"
+}
